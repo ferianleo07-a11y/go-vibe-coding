@@ -33,13 +33,13 @@ func main() {
 	// Setup seluruh rute aplikasi
 	r := routes.SetupRouter()
 
-	// Membaca port dari environment variable (default 8080)
-	port := os.Getenv("APP_PORT")
+	// Membaca port dari environment variable (mendukung APP_PORT atau PORT standar hosting)
+	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "8080" // Fallback default jika keduanya kosong
 	}
 
-	log.Printf("Aplikasi Akuntansi Hotel berjalan di http://localhost:%s\n", port)
+	log.Printf("Aplikasi Akuntansi Hotel berjalan di port :%s\n", port)
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Gagal menjalankan server: %v", err)
 	}
