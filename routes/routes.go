@@ -55,6 +55,16 @@ func SetupRouter() *gin.Engine {
 			rooms.PUT("/:id", controllers.UpdateRoom)
 			rooms.DELETE("/:id", controllers.DeleteRoom)
 		}
+
+		// Rute Reservasi & Check-in / Check-out (Terlindungi JWT)
+		reservations := api.Group("/reservations", middlewares.AuthMiddleware())
+		{
+			reservations.GET("", controllers.GetReservations)
+			reservations.GET("/:id", controllers.GetReservationByID)
+			reservations.POST("", controllers.CreateReservation)
+			reservations.PUT("/:id/checkout", controllers.CheckoutReservation)
+			reservations.PUT("/:id/cancel", controllers.CancelReservation)
+		}
 	}
 
 	return r

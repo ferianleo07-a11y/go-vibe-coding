@@ -75,13 +75,51 @@
       </div>
     </section>
 
-    <!-- TAB 2: RESERVASI & TRANSAKSI (Placeholder Tahap 4) -->
+    <!-- TAB 2: RESERVASI & TRANSAKSI TAMU -->
     <section id="tab-reservations" class="tab-content" style="display: none;">
       <div class="card">
-        <h2 class="card-title">Check-in, Check-out & Transaksi Tamu</h2>
-        <p style="color: var(--text-muted); margin-top: 0.5rem;">
-          Modul ini akan diaktifkan pada Tahap 4 (Kalkulasi otomatis biaya menginap, DP, status transaksi, dan cetak invoice).
-        </p>
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Check-in, Check-out & Transaksi Reservasi</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+              Catat identitas tamu, hitung durasi otomatis, kelola uang muka (DP), dan terbitkan invoice.
+            </p>
+          </div>
+          <button class="btn btn-primary" onclick="openCheckInModal()">+ Check-in Tamu</button>
+        </div>
+
+        <!-- Filter Status Reservasi -->
+        <div class="filter-bar" style="margin-bottom: 1.25rem;">
+          <button class="btn btn-outline btn-sm" onclick="loadReservations('')">Semua Transaksi</button>
+          <button class="btn btn-outline btn-sm" onclick="loadReservations('Check-in')">🔵 Aktif Menginap (Check-in)</button>
+          <button class="btn btn-outline btn-sm" onclick="loadReservations('Check-out')">🟢 Selesai (Check-out)</button>
+          <button class="btn btn-outline btn-sm" onclick="loadReservations('Dibatalkan')">🔴 Dibatalkan</button>
+        </div>
+
+        <!-- Tabel Reservasi -->
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>No. Invoice</th>
+                <th>Tamu</th>
+                <th>Kamar</th>
+                <th>Periode Menginap</th>
+                <th>Total Tagihan</th>
+                <th>Status Bayar</th>
+                <th>Status Reservasi</th>
+                <th style="width: 170px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="reservationsTableBody">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                  Memuat transaksi reservasi...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -163,8 +201,107 @@
     </div>
   </div>
 
+  <!-- MODAL CHECK-IN TAMU -->
+  <div id="checkInModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Check-in Tamu Baru</h3>
+        <button class="modal-close" onclick="closeCheckInModal()">&times;</button>
+      </div>
+
+      <div id="checkInModalAlert" class="alert alert-danger"></div>
+
+      <form id="checkInForm" onsubmit="handleCheckInSubmit(event)">
+        <div class="form-group">
+          <label for="resRoomId">Pilih Kamar (Hanya Status Tersedia)</label>
+          <select id="resRoomId" class="form-control" onchange="calculateEstimate()" required>
+            <option value="">Memuat kamar tersedia...</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label for="resGuestName">Nama Tamu</label>
+            <input type="text" id="resGuestName" class="form-control" placeholder="Budi Santoso" required>
+          </div>
+          <div class="form-group">
+            <label for="resGuestID">No. KTP / Passport</label>
+            <input type="text" id="resGuestID" class="form-control" placeholder="3201..." required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="resGuestPhone">Nomor Telepon / WhatsApp</label>
+          <input type="text" id="resGuestPhone" class="form-control" placeholder="0812...">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label for="resCheckInDate">Tanggal Check-in</label>
+            <input type="date" id="resCheckInDate" class="form-control" onchange="calculateEstimate()" required>
+          </div>
+          <div class="form-group">
+            <label for="resCheckOutDate">Tanggal Check-out</label>
+            <input type="date" id="resCheckOutDate" class="form-control" onchange="calculateEstimate()" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="resDownPayment">Uang Muka (DP) - IDR</label>
+          <input type="number" id="resDownPayment" class="form-control" value="0" min="0" step="1000" oninput="calculateEstimate()">
+        </div>
+
+        <!-- Box Kalkulasi Real-Time -->
+        <div style="background: #f1f5f9; padding: 0.85rem; border-radius: var(--radius); margin-bottom: 1.25rem; font-size: 0.85rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+            <span>Durasi:</span>
+            <strong id="estNights">1 Malam</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+            <span>Estimasi Total:</span>
+            <strong id="estTotal" style="color: var(--primary);">Rp 0</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>Sisa Pembayaran:</span>
+            <strong id="estRemaining" style="color: var(--danger);">Rp 0</strong>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="resNotes">Catatan Tambahan</label>
+          <input type="text" id="resNotes" class="form-control" placeholder="Misal: Tambah extra bed, non-smoking room">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeCheckInModal()">Batal</button>
+          <button type="submit" class="btn btn-primary">Konfirmasi Check-in</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL CETAK NOTA / INVOICE -->
+  <div id="invoiceModal" class="modal-overlay">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3>🧾 Nota Pembayaran Tamu</h3>
+        <button class="modal-close" onclick="closeInvoiceModal()">&times;</button>
+      </div>
+
+      <div id="invoiceModalBody">
+        <!-- Konten invoice dinamis -->
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeInvoiceModal()">Tutup</button>
+        <button type="button" class="btn btn-primary" onclick="printInvoice()">🖨️ Cetak Nota (Print)</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/static/js/auth.js"></script>
   <script src="/static/js/rooms.js"></script>
+  <script src="/static/js/reservations.js"></script>
   <script>
     // Tab switching
     function switchTab(tabKey) {
@@ -178,6 +315,13 @@
         btn.getAttribute("onclick").includes(tabKey)
       );
       if (activeBtn) activeBtn.classList.add("active");
+
+      // Load data sesuai tab
+      if (tabKey === "rooms") {
+        loadRooms();
+      } else if (tabKey === "reservations") {
+        loadReservations();
+      }
     }
 
     function filterRoomByStatus(status) {
