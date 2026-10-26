@@ -23,10 +23,10 @@ func main() {
 		log.Printf("Peringatan Database: %v\n", err)
 	} else {
 		// Jalankan AutoMigrate skema tabel
-		if err := config.AutoMigrate(&models.User{}, &models.Room{}, &models.Reservation{}); err != nil {
+		if err := config.AutoMigrate(&models.User{}, &models.Room{}, &models.Reservation{}, &models.Expense{}); err != nil {
 			log.Printf("Peringatan Migrasi: %v\n", err)
 		} else {
-			log.Println("Migrasi tabel users, rooms, dan reservations berhasil.")
+			log.Println("Migrasi tabel users, rooms, reservations, dan expenses berhasil.")
 		}
 	}
 

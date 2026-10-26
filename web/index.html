@@ -123,13 +123,52 @@
       </div>
     </section>
 
-    <!-- TAB 3: BIAYA OPERASIONAL (Placeholder Tahap 5) -->
+    <!-- TAB 3: BIAYA OPERASIONAL (USALI) -->
     <section id="tab-expenses" class="tab-content" style="display: none;">
       <div class="card">
-        <h2 class="card-title">Manajemen Biaya Operasional (USALI)</h2>
-        <p style="color: var(--text-muted); margin-top: 0.5rem;">
-          Modul ini akan diaktifkan pada Tahap 5 (Pencatatan pengeluaran operasional per kategori standar USALI).
-        </p>
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Pencatatan Biaya Operasional (Standar USALI)</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+              Klasifikasi beban pengeluaran hotel: Utilities, Operating Supplies, Maintenance, Salary, dll.
+            </p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="text-align: right; background: #fef2f2; padding: 0.5rem 1rem; border-radius: var(--radius); border: 1px solid #fecaca;">
+              <small style="color: var(--text-muted); display: block;">Total Pengeluaran:</small>
+              <strong id="totalExpenseDisplay" style="color: var(--danger); font-size: 1.1rem;">Rp 0</strong>
+            </div>
+            <button class="btn btn-primary" onclick="openAddExpenseModal()">+ Catat Pengeluaran</button>
+          </div>
+        </div>
+
+        <!-- Filter Kategori USALI -->
+        <div id="expenseFilterBar" class="filter-bar" style="margin-bottom: 1.25rem;">
+          <button class="btn btn-outline btn-sm" onclick="filterExpenses('')">Semua Kategori</button>
+        </div>
+
+        <!-- Tabel Pengeluaran -->
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Kategori USALI</th>
+                <th>Keterangan / Item</th>
+                <th>Jumlah (IDR)</th>
+                <th>Catatan</th>
+                <th style="width: 140px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="expensesTableBody">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                  Memuat data pengeluaran...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -299,9 +338,64 @@
     </div>
   </div>
 
+  <!-- MODAL CATAT / EDIT PENGELUARAN (USALI) -->
+  <div id="expenseModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="expenseModalTitle">Catat Pengeluaran Operasional</h3>
+        <button class="modal-close" onclick="closeExpenseModal()">&times;</button>
+      </div>
+
+      <div id="expenseModalAlert" class="alert alert-danger"></div>
+
+      <form id="expenseForm" onsubmit="handleExpenseFormSubmit(event)">
+        <input type="hidden" id="expenseId">
+
+        <div class="form-group">
+          <label for="expCategory">Kategori Beban USALI</label>
+          <select id="expCategory" class="form-control" required>
+            <!-- Diisi otomatis dari API /api/expenses/categories -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="expTitle">Deskripsi / Nama Item Pengeluaran</label>
+          <input type="text" id="expTitle" class="form-control" placeholder="Contoh: Tagihan Listrik PLN Bulan Oktober" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label for="expAmount">Nominal Biaya (IDR)</label>
+            <input type="number" id="expAmount" class="form-control" placeholder="Contoh: 1500000" min="1" step="1000" required>
+          </div>
+          <div class="form-group">
+            <label for="expDate">Tanggal Pengeluaran</label>
+            <input type="date" id="expDate" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="expReceiptNo">Nomor Bukti / Kuitansi (Opsional)</label>
+          <input type="text" id="expReceiptNo" class="form-control" placeholder="Contoh: KW-2026/10/01">
+        </div>
+
+        <div class="form-group">
+          <label for="expNotes">Catatan Tambahan</label>
+          <input type="text" id="expNotes" class="form-control" placeholder="Keterangan tambahan jika diperlukan">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeExpenseModal()">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Pengeluaran</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="/static/js/auth.js"></script>
   <script src="/static/js/rooms.js"></script>
   <script src="/static/js/reservations.js"></script>
+  <script src="/static/js/expenses.js"></script>
   <script>
     // Tab switching
     function switchTab(tabKey) {
@@ -321,6 +415,9 @@
         loadRooms();
       } else if (tabKey === "reservations") {
         loadReservations();
+      } else if (tabKey === "expenses") {
+        loadExpenseCategories();
+        loadExpenses();
       }
     }
 
@@ -346,7 +443,7 @@
         return;
       }
 
-      // Muat data kamar pertama kali
+      // Muat data awal
       loadRooms();
     });
   </script>

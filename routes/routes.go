@@ -65,6 +65,17 @@ func SetupRouter() *gin.Engine {
 			reservations.PUT("/:id/checkout", controllers.CheckoutReservation)
 			reservations.PUT("/:id/cancel", controllers.CancelReservation)
 		}
+
+		// Rute Biaya Operasional USALI (Terlindungi JWT)
+		expenses := api.Group("/expenses", middlewares.AuthMiddleware())
+		{
+			expenses.GET("/categories", controllers.GetExpenseCategories)
+			expenses.GET("", controllers.GetExpenses)
+			expenses.GET("/:id", controllers.GetExpenseByID)
+			expenses.POST("", controllers.CreateExpense)
+			expenses.PUT("/:id", controllers.UpdateExpense)
+			expenses.DELETE("/:id", controllers.DeleteExpense)
+		}
 	}
 
 	return r
