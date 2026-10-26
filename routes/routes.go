@@ -76,6 +76,12 @@ func SetupRouter() *gin.Engine {
 			expenses.PUT("/:id", controllers.UpdateExpense)
 			expenses.DELETE("/:id", controllers.DeleteExpense)
 		}
+
+		// Rute Dashboard KPI & Rekap Laporan Keuangan (Terlindungi JWT)
+		reports := api.Group("/reports", middlewares.AuthMiddleware())
+		{
+			reports.GET("/dashboard", controllers.GetDashboardMetrics)
+		}
 	}
 
 	return r

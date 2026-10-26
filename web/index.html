@@ -172,13 +172,107 @@
       </div>
     </section>
 
-    <!-- TAB 4: KPI & LAPORAN (Placeholder Tahap 6) -->
+    <!-- TAB 4: KPI & LAPORAN KEUANGAN USALI -->
     <section id="tab-reports" class="tab-content" style="display: none;">
+      <!-- Grid Indikator Kinerja Utama (KPI Hotel) -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <!-- Occupancy Rate -->
+        <div class="card" style="margin-bottom: 0;">
+          <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">OCCUPANCY RATE (Tingkat Hunian)</div>
+          <div id="kpiOccupancy" style="font-size: 2rem; font-weight: 700; color: var(--primary); margin: 0.5rem 0;">0%</div>
+          <small style="color: var(--text-muted);">(Kamar Terisi / Total Kamar) × 100</small>
+        </div>
+
+        <!-- ADR -->
+        <div class="card" style="margin-bottom: 0;">
+          <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">ADR (Average Daily Rate)</div>
+          <div id="kpiADR" style="font-size: 1.75rem; font-weight: 700; color: var(--secondary); margin: 0.5rem 0;">Rp 0</div>
+          <small style="color: var(--text-muted);">Pendapatan / Kamar Terjual</small>
+        </div>
+
+        <!-- RevPAR -->
+        <div class="card" style="margin-bottom: 0;">
+          <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">RevPAR (Revenue per Available Room)</div>
+          <div id="kpiRevPAR" style="font-size: 1.75rem; font-weight: 700; color: var(--accent); margin: 0.5rem 0;">Rp 0</div>
+          <small style="color: var(--text-muted);">Pendapatan / Total Kamar Tersedia</small>
+        </div>
+      </div>
+
+      <!-- Ringkasan Laba / Rugi & Inventaris Kamar -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        <!-- Rekapitulasi Laba / Rugi -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <h3 class="card-title">Rekapitulasi Omzet & Laba/Rugi</h3>
+            <span id="badgeNetIncomeStatus" class="badge badge-success">LABA</span>
+          </div>
+          <div style="margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span>Total Pendapatan Kamar (Revenue):</span>
+              <strong id="metricRevenue" style="color: var(--primary);">Rp 0</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Total Beban Operasional (Expenses):</span>
+              <strong id="metricExpenses" style="color: var(--danger);">- Rp 0</strong>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.15rem;">
+            <strong>Laba / Rugi Bersih (Net Income):</strong>
+            <strong id="metricNetIncome" style="color: var(--success); font-size: 1.35rem;">Rp 0</strong>
+          </div>
+        </div>
+
+        <!-- Rekap Inventaris Kamar Real-Time -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <h3 class="card-title">Status Inventaris Kamar</h3>
+            <span class="badge badge-secondary">Total: <span id="invTotalRooms">0</span> Kamar</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.9rem;">
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 0.75rem; border-radius: var(--radius);">
+              <div style="color: #166534;">🟢 Tersedia</div>
+              <strong id="invAvailableRooms" style="font-size: 1.25rem; color: #166534;">0</strong>
+            </div>
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 0.75rem; border-radius: var(--radius);">
+              <div style="color: #1e40af;">🔵 Terisi</div>
+              <strong id="invOccupiedRooms" style="font-size: 1.25rem; color: #1e40af;">0</strong>
+            </div>
+            <div style="background: #fefce8; border: 1px solid #fef08a; padding: 0.75rem; border-radius: var(--radius);">
+              <div style="color: #854d0e;">🟡 Sedang Dibersihkan</div>
+              <strong id="invCleaningRooms" style="font-size: 1.25rem; color: #854d0e;">0</strong>
+            </div>
+            <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 0.75rem; border-radius: var(--radius);">
+              <div style="color: #991b1b;">🔴 Dalam Perbaikan</div>
+              <strong id="invMaintenanceRooms" style="font-size: 1.25rem; color: #991b1b;">0</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Breakdown Beban USALI -->
       <div class="card">
-        <h2 class="card-title">Dashboard Metrik KPI & Rekap Laporan</h2>
-        <p style="color: var(--text-muted); margin-top: 0.5rem;">
-          Modul ini akan diaktifkan pada Tahap 6 (Kalkulasi Occupancy Rate, ADR, RevPAR, serta Rekapitulasi Laba/Rugi).
-        </p>
+        <div class="card-header">
+          <h3 class="card-title">Rincian Beban Operasional Standar USALI</h3>
+          <small style="color: var(--text-muted);">Distribusi pengeluaran per klasifikasi beban lodging industry</small>
+        </div>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Klasifikasi Beban USALI</th>
+                <th>Nominal Pengeluaran</th>
+                <th style="width: 250px;">Persentase Beban</th>
+              </tr>
+            </thead>
+            <tbody id="usaliBreakdownTableBody">
+              <tr>
+                <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                  Memuat rincian laporan USALI...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   </main>
@@ -396,6 +490,7 @@
   <script src="/static/js/rooms.js"></script>
   <script src="/static/js/reservations.js"></script>
   <script src="/static/js/expenses.js"></script>
+  <script src="/static/js/dashboard.js"></script>
   <script>
     // Tab switching
     function switchTab(tabKey) {
@@ -418,6 +513,8 @@
       } else if (tabKey === "expenses") {
         loadExpenseCategories();
         loadExpenses();
+      } else if (tabKey === "reports") {
+        loadDashboardMetrics();
       }
     }
 
