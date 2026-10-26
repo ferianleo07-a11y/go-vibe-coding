@@ -35,3 +35,11 @@ func InitDB() (*gorm.DB, error) {
 	log.Println("Berhasil terhubung ke database PostgreSQL.")
 	return DB, nil
 }
+
+// AutoMigrate menjalankan migrasi skema tabel database untuk model-model yang diberikan.
+func AutoMigrate(models ...interface{}) error {
+	if DB == nil {
+		return errors.New("database belum terhubung, migrasi dilewati")
+	}
+	return DB.AutoMigrate(models...)
+}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar Akun - Akuntansi Bisnis Hotel</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1>🏨 Buat Akun Baru</h1>
+        <p>Kelola Keuangan Hotel Berstandar USALI</p>
+      </div>
+
+      <div id="alertMessage" class="alert"></div>
+
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="name">Nama Lengkap / Nama Hotel</label>
+          <input type="text" id="name" class="form-control" placeholder="Grand Mulia Hotel" required minlength="2">
+        </div>
+
+        <div class="form-group">
+          <label for="email">Alamat Email</label>
+          <input type="email" id="email" class="form-control" placeholder="finance@grandmulia.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Kata Sandi (Min. 6 Karakter)</label>
+          <input type="password" id="password" class="form-control" placeholder="••••••••" required minlength="6">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Daftar Akun</button>
+      </form>
+
+      <div class="auth-footer">
+        Sudah memiliki akun? <a href="/login">Masuk ke sini</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/auth.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      initRegisterForm();
+    });
+  </script>
+</body>
+</html>

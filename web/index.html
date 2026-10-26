@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Akuntansi Bisnis Hotel</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .navbar {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .navbar-brand {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .user-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .btn-logout {
+      background: #fee2e2;
+      color: var(--danger);
+      border: 1px solid #fecaca;
+      padding: 0.4rem 0.8rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .btn-logout:hover {
+      background: #fecaca;
+    }
+    .main-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      width: 100%;
+    }
+    .welcome-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <a href="/" class="navbar-brand">🏨 Hotel Finance USALI</a>
+    <div class="user-section">
+      <span id="userNameDisplay">Memuat profil...</span>
+      <button class="btn-logout" onclick="logout()">Keluar</button>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="welcome-card">
+      <h2>Selamat Datang di Sistem Akuntansi Hotel</h2>
+      <p id="welcomeUserText" style="color: var(--text-muted); margin-top: 0.5rem;">
+        Autentikasi JWT berhasil diverifikasi. Modul kamar, reservasi, dan keuangan siap dimuat.
+      </p>
+    </div>
+  </main>
+
+  <script src="/static/js/auth.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const token = getToken();
+      if (!token) {
+        window.location.href = "/login";
+        return;
+      }
+
+      // Verifikasi token ke backend
+      try {
+        const res = await authFetch("/api/auth/me");
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        document.getElementById("userNameDisplay").textContent = `👤 ${data.user.name} (${data.user.email})`;
+        document.getElementById("welcomeUserText").textContent = `Halo ${data.user.name}, sesi Anda aktif. ID Pengguna: #${data.user.id}`;
+      } catch (err) {
+        logout();
+      }
+    });
+  </script>
+</body>
+</html>

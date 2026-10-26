@@ -2,12 +2,12 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
 
 	"hotel-app/config"
+	"hotel-app/models"
+	"hotel-app/routes"
 
-	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -18,28 +18,20 @@ func main() {
 	}
 
 	// Inisialisasi koneksi database PostgreSQL
-	db, err := config.InitDB()
+	_, err := config.InitDB()
 	if err != nil {
 		log.Printf("Peringatan Database: %v\n", err)
 	} else {
-		_ = db
+		// Jalankan AutoMigrate skema tabel
+		if err := config.AutoMigrate(&models.User{}); err != nil {
+			log.Printf("Peringatan Migrasi: %v\n", err)
+		} else {
+			log.Println("Migrasi tabel pengguna (users) berhasil.")
+		}
 	}
 
-	// Inisialisasi router Gin
-	r := gin.Default()
-
-	// Endpoint dasar health check untuk pengujian Tahap 1
-	r.GET("/api/health", func(c *gin.Context) {
-		dbStatus := "terhubung"
-		if config.DB == nil {
-			dbStatus = "tidak terhubung"
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"status":   "ok",
-			"app":      "Aplikasi Akuntansi & Keuangan Bisnis Hotel",
-			"database": dbStatus,
-		})
-	})
+	// Setup seluruh rute aplikasi
+	r := routes.SetupRouter()
 
 	// Membaca port dari environment variable (default 8080)
 	port := os.Getenv("APP_PORT")
@@ -47,7 +39,7 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("Server berjalan di http://localhost:%s\n", port)
+	log.Printf("Aplikasi Akuntansi Hotel berjalan di http://localhost:%s\n", port)
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Gagal menjalankan server: %v", err)
 	}
