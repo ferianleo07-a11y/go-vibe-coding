@@ -45,6 +45,16 @@ func SetupRouter() *gin.Engine {
 			// Profil Pengguna (Terlindungi JWT)
 			auth.GET("/me", middlewares.AuthMiddleware(), controllers.GetCurrentUser)
 		}
+
+		// Rute Kamar (Terlindungi JWT)
+		rooms := api.Group("/rooms", middlewares.AuthMiddleware())
+		{
+			rooms.GET("", controllers.GetRooms)
+			rooms.GET("/:id", controllers.GetRoomByID)
+			rooms.POST("", controllers.CreateRoom)
+			rooms.PUT("/:id", controllers.UpdateRoom)
+			rooms.DELETE("/:id", controllers.DeleteRoom)
+		}
 	}
 
 	return r

@@ -3,77 +3,187 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Akuntansi Bisnis Hotel</title>
+  <title>Dashboard Akuntansi Bisnis Hotel (USALI)</title>
   <link rel="stylesheet" href="/static/css/style.css">
-  <style>
-    .navbar {
-      background: #ffffff;
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .navbar-brand {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--primary);
-      text-decoration: none;
-    }
-    .user-section {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .btn-logout {
-      background: #fee2e2;
-      color: var(--danger);
-      border: 1px solid #fecaca;
-      padding: 0.4rem 0.8rem;
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.85rem;
-    }
-    .btn-logout:hover {
-      background: #fecaca;
-    }
-    .main-container {
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-      width: 100%;
-    }
-    .welcome-card {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      box-shadow: var(--shadow);
-    }
-  </style>
 </head>
 <body>
+  <!-- Header & Navbar -->
   <header class="navbar">
-    <a href="/" class="navbar-brand">🏨 Hotel Finance USALI</a>
+    <a href="/" class="navbar-brand">
+      🏨 <span>Hotel Finance USALI</span>
+    </a>
     <div class="user-section">
       <span id="userNameDisplay">Memuat profil...</span>
-      <button class="btn-logout" onclick="logout()">Keluar</button>
+      <button class="btn btn-outline btn-sm" onclick="logout()" style="color: var(--danger); border-color: #fecaca;">Keluar</button>
     </div>
   </header>
 
+  <!-- Container Utama -->
   <main class="main-container">
-    <div class="welcome-card">
-      <h2>Selamat Datang di Sistem Akuntansi Hotel</h2>
-      <p id="welcomeUserText" style="color: var(--text-muted); margin-top: 0.5rem;">
-        Autentikasi JWT berhasil diverifikasi. Modul kamar, reservasi, dan keuangan siap dimuat.
-      </p>
-    </div>
+    <!-- Tab Navigasi -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('rooms')">🛌 Manajemen Kamar</button>
+      <button class="tab-btn" onclick="switchTab('reservations')">🧳 Check-in & Check-out</button>
+      <button class="tab-btn" onclick="switchTab('expenses')">💸 Biaya Operasional</button>
+      <button class="tab-btn" onclick="switchTab('reports')">📊 KPI & Rekap Laporan</button>
+    </nav>
+
+    <!-- TAB 1: MANAJEMEN KAMAR -->
+    <section id="tab-rooms" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Inventaris & Ketersediaan Kamar</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+              Pantau status ketersediaan secara real-time dan kelola tarif kamar.
+            </p>
+          </div>
+          <button class="btn btn-primary" onclick="openAddRoomModal()">+ Tambah Kamar</button>
+        </div>
+
+        <!-- Filter Status Kamar -->
+        <div class="filter-bar" style="margin-bottom: 1.25rem;">
+          <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('')">Semua Status</button>
+          <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('Tersedia')">🟢 Tersedia</button>
+          <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('Terisi')">🔵 Terisi</button>
+          <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('Sedang Dibersihkan')">🟡 Sedang Dibersihkan</button>
+          <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('Dalam Perbaikan')">🔴 Dalam Perbaikan</button>
+        </div>
+
+        <!-- Tabel Kamar -->
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>No. Kamar</th>
+                <th>Tipe Kamar</th>
+                <th>Tarif / Malam</th>
+                <th>Status Real-Time</th>
+                <th>Keterangan</th>
+                <th style="width: 140px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="roomsTableBody">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                  Memuat data kamar...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: RESERVASI & TRANSAKSI (Placeholder Tahap 4) -->
+    <section id="tab-reservations" class="tab-content" style="display: none;">
+      <div class="card">
+        <h2 class="card-title">Check-in, Check-out & Transaksi Tamu</h2>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">
+          Modul ini akan diaktifkan pada Tahap 4 (Kalkulasi otomatis biaya menginap, DP, status transaksi, dan cetak invoice).
+        </p>
+      </div>
+    </section>
+
+    <!-- TAB 3: BIAYA OPERASIONAL (Placeholder Tahap 5) -->
+    <section id="tab-expenses" class="tab-content" style="display: none;">
+      <div class="card">
+        <h2 class="card-title">Manajemen Biaya Operasional (USALI)</h2>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">
+          Modul ini akan diaktifkan pada Tahap 5 (Pencatatan pengeluaran operasional per kategori standar USALI).
+        </p>
+      </div>
+    </section>
+
+    <!-- TAB 4: KPI & LAPORAN (Placeholder Tahap 6) -->
+    <section id="tab-reports" class="tab-content" style="display: none;">
+      <div class="card">
+        <h2 class="card-title">Dashboard Metrik KPI & Rekap Laporan</h2>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">
+          Modul ini akan diaktifkan pada Tahap 6 (Kalkulasi Occupancy Rate, ADR, RevPAR, serta Rekapitulasi Laba/Rugi).
+        </p>
+      </div>
+    </section>
   </main>
 
+  <!-- MODAL FORM TAMBAH / EDIT KAMAR -->
+  <div id="roomModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="roomModalTitle">Tambah Kamar Baru</h3>
+        <button class="modal-close" onclick="closeRoomModal()">&times;</button>
+      </div>
+
+      <div id="roomModalAlert" class="alert alert-danger"></div>
+
+      <form id="roomForm" onsubmit="handleRoomFormSubmit(event)">
+        <input type="hidden" id="roomId">
+
+        <div class="form-group">
+          <label for="roomNumber">Nomor Kamar</label>
+          <input type="text" id="roomNumber" class="form-control" placeholder="Contoh: 101, 202A" required>
+        </div>
+
+        <div class="form-group">
+          <label for="roomType">Tipe Kamar</label>
+          <select id="roomType" class="form-control" required>
+            <option value="Standard">Standard Room</option>
+            <option value="Deluxe">Deluxe Room</option>
+            <option value="Executive Suite">Executive Suite</option>
+            <option value="Family Suite">Family Suite</option>
+            <option value="Presidential Suite">Presidential Suite</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="roomPrice">Tarif per Malam (IDR)</label>
+          <input type="number" id="roomPrice" class="form-control" placeholder="Contoh: 500000" min="1" step="1000" required>
+        </div>
+
+        <div class="form-group">
+          <label for="roomStatus">Status Ketersediaan</label>
+          <select id="roomStatus" class="form-control" required>
+            <option value="Tersedia">🟢 Tersedia</option>
+            <option value="Terisi">🔵 Terisi</option>
+            <option value="Sedang Dibersihkan">🟡 Sedang Dibersihkan</option>
+            <option value="Dalam Perbaikan">🔴 Dalam Perbaikan</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="roomDescription">Keterangan / Fasilitas Tambahan</label>
+          <input type="text" id="roomDescription" class="form-control" placeholder="Contoh: Lantai 2, Double Bed, City View">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeRoomModal()">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Kamar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="/static/js/auth.js"></script>
+  <script src="/static/js/rooms.js"></script>
   <script>
+    // Tab switching
+    function switchTab(tabKey) {
+      document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
+      document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+
+      const target = document.getElementById("tab-" + tabKey);
+      if (target) target.style.display = "block";
+
+      const activeBtn = Array.from(document.querySelectorAll(".tab-btn")).find(btn => 
+        btn.getAttribute("onclick").includes(tabKey)
+      );
+      if (activeBtn) activeBtn.classList.add("active");
+    }
+
+    function filterRoomByStatus(status) {
+      loadRooms(status);
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
       const token = getToken();
       if (!token) {
@@ -81,16 +191,19 @@
         return;
       }
 
-      // Verifikasi token ke backend
+      // Verifikasi token & ambil data profil pengguna
       try {
         const res = await authFetch("/api/auth/me");
         if (!res.ok) throw new Error();
         const data = await res.json();
-        document.getElementById("userNameDisplay").textContent = `👤 ${data.user.name} (${data.user.email})`;
-        document.getElementById("welcomeUserText").textContent = `Halo ${data.user.name}, sesi Anda aktif. ID Pengguna: #${data.user.id}`;
+        document.getElementById("userNameDisplay").textContent = `👤 ${data.user.name}`;
       } catch (err) {
         logout();
+        return;
       }
+
+      // Muat data kamar pertama kali
+      loadRooms();
     });
   </script>
 </body>
