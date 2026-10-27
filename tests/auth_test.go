@@ -3,13 +3,13 @@ package tests
 import (
 	"testing"
 
-	"hotel-app/models"
+	"hotel-app/internal/auth"
 	"hotel-app/utils"
 )
 
 // TestPasswordHashing menguji keamanan hashing password menggunakan bcrypt
 func TestPasswordHashing(t *testing.T) {
-	user := models.User{
+	user := auth.User{
 		Name:  "Admin Hotel",
 		Email: "admin@test.com",
 	}

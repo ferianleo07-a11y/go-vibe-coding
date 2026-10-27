@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"hotel-app/models"
+	"hotel-app/internal/expense"
 )
 
 // TestHotelKPIFormulas menguji formula Occupancy Rate, ADR, RevPAR, dan Laba/Rugi
@@ -63,7 +63,7 @@ func TestUSALICategoryValidation(t *testing.T) {
 	}
 
 	for _, cat := range validCategories {
-		if !models.IsValidUSALICategory(cat) {
+		if !expense.IsValidUSALICategory(cat) {
 			t.Errorf("Kategori valid '%s' seharusnya diterima oleh validator USALI", cat)
 		}
 	}
@@ -71,7 +71,7 @@ func TestUSALICategoryValidation(t *testing.T) {
 	// Kategori tidak valid
 	invalidCategories := []string{"Beli Motor Pribadi", "Liburan", "RandomCategory", ""}
 	for _, cat := range invalidCategories {
-		if models.IsValidUSALICategory(cat) {
+		if expense.IsValidUSALICategory(cat) {
 			t.Errorf("Kategori tidak valid '%s' seharusnya ditolak oleh validator USALI", cat)
 		}
 	}

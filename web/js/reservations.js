@@ -1,4 +1,4 @@
-// reservations.js - Check-in, Check-out, Kalkulasi Tagihan & Invoice
+// reservations.js - Check-in, Check-out, Kalkulasi Tagihan, Metode Pembayaran & Reminder WA/Email
 
 let currentReservations = [];
 
@@ -23,7 +23,7 @@ async function loadReservations(statusFilter = "") {
     console.error("Gagal memuat reservasi:", err);
     const tbody = document.getElementById("reservationsTableBody");
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--danger); padding: 1.5rem;">${err.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--danger); padding: 1.5rem;">${err.message}</td></tr>`;
     }
   }
 }
@@ -36,7 +36,7 @@ function renderReservations(reservations) {
   if (reservations.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+        <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">
           Belum ada data transaksi tamu. Klik tombol "Check-in Tamu" untuk memulai.
         </td>
       </tr>
@@ -49,17 +49,20 @@ function renderReservations(reservations) {
   tbody.innerHTML = reservations.map(r => {
     const statusBadge = getReservationBadge(r.status);
     const payBadge = getPaymentBadge(r.payment_status);
+    const reminderBadge = getReminderBadge(r.reminder_status);
     const inDate = r.check_in_date.substring(0, 10);
     const outDate = r.check_out_date.substring(0, 10);
     const roomNumber = r.room ? r.room.room_number : `ID #${r.room_id}`;
     const roomType = r.room ? r.room.type : "";
+    const paymentMethod = r.payment_method || "Tunai";
 
     return `
       <tr>
         <td><strong>${escapeHtml(r.invoice_number)}</strong></td>
         <td>
           <div><strong>${escapeHtml(r.guest_name)}</strong></div>
-          <small style="color: var(--text-muted);">${escapeHtml(r.guest_id_card)}</small>
+          <small style="color: var(--text-muted);">${escapeHtml(r.guest_phone || "-")}</small>
+          ${r.guest_email ? `<div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(r.guest_email)}</div>` : ''}
         </td>
         <td>
           <div><strong>Kamar ${escapeHtml(roomNumber)}</strong></div>
@@ -71,16 +74,26 @@ function renderReservations(reservations) {
         </td>
         <td>
           <div>${formatIDR(r.total_amount)}</div>
+          <div style="margin-top: 0.2rem;">
+            <span class="badge badge-secondary" style="font-size: 0.7rem;">💳 ${escapeHtml(paymentMethod)}</span>
+          </div>
           <small style="color: var(--text-muted);">Sisa: ${formatIDR(r.remaining_amount)}</small>
         </td>
         <td><span class="badge ${payBadge}">${escapeHtml(r.payment_status)}</span></td>
         <td><span class="badge ${statusBadge}">${escapeHtml(r.status)}</span></td>
         <td>
-          <button class="btn-sm btn-outline" onclick="openInvoiceModal(${r.id})">🧾 Nota</button>
-          ${r.status === 'Check-in' ? `
-            <button class="btn-sm btn-primary" onclick="checkoutGuest(${r.id}, '${escapeHtml(r.guest_name)}')">Check-out</button>
-            <button class="btn-sm btn-danger" onclick="cancelGuest(${r.id}, '${escapeHtml(r.guest_name)}')">Batal</button>
-          ` : ''}
+          <span class="badge ${reminderBadge.class}">${reminderBadge.label}</span>
+          ${r.reminder_sent_at ? `<div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">${r.reminder_sent_at.substring(11, 16)} WIB</div>` : ''}
+        </td>
+        <td>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+            <button class="btn-sm btn-outline" onclick="openInvoiceModal(${r.id})">🧾 Nota</button>
+            ${r.status === 'Check-in' ? `
+              <button class="btn-sm btn-outline" style="color: #047857; border-color: #059669;" onclick="sendReminder(${r.id}, '${escapeHtml(r.guest_name)}')">🔔 Remind</button>
+              <button class="btn-sm btn-primary" onclick="checkoutGuest(${r.id}, '${escapeHtml(r.guest_name)}')">Check-out</button>
+              <button class="btn-sm btn-danger" onclick="cancelGuest(${r.id}, '${escapeHtml(r.guest_name)}')">Batal</button>
+            ` : ''}
+          </div>
         </td>
       </tr>
     `;
@@ -102,6 +115,17 @@ function getPaymentBadge(status) {
     case "DP": return "badge-warning";
     case "Belum Bayar": return "badge-danger";
     default: return "badge-secondary";
+  }
+}
+
+function getReminderBadge(status) {
+  switch (status) {
+    case "Terkirim":
+      return { class: "badge-success", label: "🟢 Terkirim" };
+    case "Gagal":
+      return { class: "badge-danger", label: "🔴 Gagal" };
+    default:
+      return { class: "badge-secondary", label: "⚪ Belum Dikirim" };
   }
 }
 
@@ -142,7 +166,11 @@ async function openCheckInModal() {
   document.getElementById("resGuestName").value = "";
   document.getElementById("resGuestID").value = "";
   document.getElementById("resGuestPhone").value = "";
+  const emailInput = document.getElementById("resGuestEmail");
+  if (emailInput) emailInput.value = "";
   document.getElementById("resDownPayment").value = "0";
+  const payMethodInput = document.getElementById("resPaymentMethod");
+  if (payMethodInput) payMethodInput.value = "Tunai";
   document.getElementById("resNotes").value = "";
 
   calculateEstimate();
@@ -198,9 +226,11 @@ async function handleCheckInSubmit(e) {
     guest_name: document.getElementById("resGuestName").value.trim(),
     guest_id_card: document.getElementById("resGuestID").value.trim(),
     guest_phone: document.getElementById("resGuestPhone").value.trim(),
+    guest_email: document.getElementById("resGuestEmail") ? document.getElementById("resGuestEmail").value.trim() : "",
     check_in_date: document.getElementById("resCheckInDate").value,
     check_out_date: document.getElementById("resCheckOutDate").value,
     down_payment: parseFloat(document.getElementById("resDownPayment").value) || 0,
+    payment_method: document.getElementById("resPaymentMethod") ? document.getElementById("resPaymentMethod").value : "Tunai",
     notes: document.getElementById("resNotes").value.trim()
   };
 
@@ -224,6 +254,38 @@ async function handleCheckInSubmit(e) {
   } catch (err) {
     alertEl.textContent = err.message;
     alertEl.style.display = "block";
+  }
+}
+
+// Kirim Pengingat Checkout (WA & Email)
+async function sendReminder(id, guestName) {
+  if (!confirm(`Kirim pengingat check-out (15 menit) via WhatsApp dan Email kepada "${guestName}"?`)) {
+    return;
+  }
+
+  try {
+    const res = await authFetch(`/api/reservations/${id}/remind`, {
+      method: "POST"
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Gagal mengirimkan pengingat");
+    }
+
+    let alertMsg = `Pengingat berhasil diproses!\n- ${data.details || 'WA & Email terkirim'}`;
+    if (data.whatsapp_url) {
+      alertMsg += `\n\nKlik OK untuk membuka WhatsApp Web / Chat langsung dengan tamu.`;
+      if (confirm(alertMsg)) {
+        window.open(data.whatsapp_url, "_blank");
+      }
+    } else {
+      alert(alertMsg);
+    }
+
+    loadReservations();
+  } catch (err) {
+    alert("Error: " + err.message);
   }
 }
 
@@ -288,6 +350,7 @@ async function openInvoiceModal(id) {
     const formatIDR = (num) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(num);
 
     const user = getCurrentUser() || { name: "Hotel Finance" };
+    const paymentMethod = r.payment_method || "Tunai";
 
     const invoiceHTML = `
       <div id="printableInvoice" class="invoice-container">
@@ -309,13 +372,15 @@ async function openInvoiceModal(id) {
             <strong>Informasi Tamu:</strong>
             <div>Nama: ${escapeHtml(r.guest_name)}</div>
             <div>No. Identitas (KTP/Passport): ${escapeHtml(r.guest_id_card)}</div>
-            <div>Telepon: ${escapeHtml(r.guest_phone || "-")}</div>
+            <div>Telepon / WhatsApp: ${escapeHtml(r.guest_phone || "-")}</div>
+            <div>Email Tamu: ${escapeHtml(r.guest_email || "-")}</div>
           </div>
           <div>
             <strong>Detail Menginap:</strong>
             <div>Kamar: No. ${r.room ? escapeHtml(r.room.room_number) : r.room_id} (${r.room ? escapeHtml(r.room.type) : ""})</div>
             <div>Check-in: ${r.check_in_date.substring(0, 10)}</div>
-            <div>Check-out: ${r.check_out_date.substring(0, 10)} (${r.nights} Malam)</div>
+            <div>Check-out: ${r.check_out_date.substring(0, 10)} (Pukul 12:00 WIB)</div>
+            <div>Durasi: <strong>${r.nights} Malam</strong></div>
           </div>
         </div>
 
@@ -338,6 +403,10 @@ async function openInvoiceModal(id) {
           </tbody>
           <tfoot>
             <tr>
+              <td colspan="3" style="text-align: right;">Metode Pembayaran:</td>
+              <td style="text-align: right; font-weight: 600;">${escapeHtml(paymentMethod)}</td>
+            </tr>
+            <tr>
               <td colspan="3" style="text-align: right;">Uang Muka (DP):</td>
               <td style="text-align: right; color: var(--secondary); font-weight: 600;">- ${formatIDR(r.down_payment)}</td>
             </tr>
@@ -351,7 +420,8 @@ async function openInvoiceModal(id) {
         <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted);">
           <div>
             Status Transaksi: <strong style="color: var(--primary);">${escapeHtml(r.status)}</strong> | 
-            Status Bayar: <strong style="color: var(--secondary);">${escapeHtml(r.payment_status)}</strong>
+            Status Bayar: <strong style="color: var(--secondary);">${escapeHtml(r.payment_status)}</strong> |
+            Metode: <strong style="color: var(--text);">${escapeHtml(paymentMethod)}</strong>
           </div>
           <div style="text-align: right;">
             Terima kasih atas kunjungan Anda.

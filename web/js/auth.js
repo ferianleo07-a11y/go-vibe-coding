@@ -24,7 +24,7 @@ function getCurrentUser() {
 function logout() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
-  window.location.href = "/login";
+  window.location.href = "/";
 }
 
 // Helper untuk fetch API dengan header Authorization Bearer
@@ -95,9 +95,9 @@ function initLoginForm() {
 
   if (!form) return;
 
-  // Jika sudah login, redirect ke halaman utama
+  // Jika sudah login, redirect ke workspace portal
   if (getToken()) {
-    window.location.href = "/";
+    window.location.href = "/?view=portal";
     return;
   }
 
@@ -122,9 +122,9 @@ function initLoginForm() {
 
       // Simpan JWT di localStorage
       setAuthSession(data.token, data.user);
-      showAlert("Login berhasil! Mengalihkan...", true);
+      showAlert("Login berhasil! Mengalihkan ke Workspace...", true);
       setTimeout(() => {
-        window.location.href = "/";
+        window.location.href = "/?view=portal";
       }, 800);
     } catch (err) {
       showAlert(err.message, false);

@@ -3,280 +3,742 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Akuntansi Bisnis Hotel (USALI)</title>
+  <title>SmarTel: Hotel Property Management System</title>
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-  <!-- Header & Navbar -->
-  <header class="navbar">
-    <a href="/" class="navbar-brand">
-      🏨 <span>SmarTel: Hotel Finance USALI</span>
-    </a>
-    <div class="user-section">
-      <span id="userNameDisplay">Memuat profil...</span>
-      <button class="btn btn-outline btn-sm" onclick="logout()" style="color: var(--danger); border-color: #fecaca;">Keluar</button>
+
+  <!-- =========================================================
+       NAVBAR HOTEL PMS (SMARTEL)
+  ========================================================== -->
+  <header class="hotel-navbar">
+    <div class="navbar-inner">
+      <a href="/" class="brand-wrapper" onclick="showPublicView(event)">
+        <div class="brand-crest">ST</div>
+        <div class="brand-info">
+          <h1>SmarTel</h1>
+          <p>Hotel Property Management System</p>
+        </div>
+      </a>
+
+      <!-- Menu Navigasi Publik -->
+      <ul class="navbar-nav" id="publicNavLinks">
+        <li><a class="nav-link active" onclick="scrollToSection('hero')">Beranda</a></li>
+        <li><a class="nav-link" onclick="scrollToSection('benefits')">Manfaat</a></li>
+        <li><a class="nav-link" onclick="scrollToSection('features')">Fitur Utama</a></li>
+        <li><a class="nav-link" onclick="scrollToSection('usali')">Standar USALI</a></li>
+        <li><a class="nav-link" onclick="scrollToSection('architecture')">Arsitektur</a></li>
+        <li><a class="nav-link" onclick="scrollToSection('steps')">Cara Memulai</a></li>
+      </ul>
+
+      <!-- Aksi Pengguna (Login Admin / Akses Workspace) -->
+      <div class="navbar-actions">
+        <!-- Tampilan Belum Login -->
+        <div id="guestActionGroup" style="display: flex; gap: 0.6rem; align-items: center;">
+          <a href="/login" class="btn btn-outline" style="font-size: 0.85rem;">Masuk (Login)</a>
+          <a href="/register" class="btn btn-gold" style="font-size: 0.85rem;">Daftar Akun Hotel</a>
+        </div>
+
+        <!-- Tampilan Sudah Login -->
+        <div id="userActionGroup" style="display: none; align-items: center; gap: 0.75rem;">
+          <button id="btnSwitchView" class="btn btn-gold" onclick="toggleWorkspaceView()">
+            🏢 Buka Workspace Manajemen
+          </button>
+          <span id="userNameDisplay" style="font-weight: 600; font-size: 0.85rem; color: var(--primary);">
+            👤 Admin Hotel
+          </span>
+          <button class="btn btn-danger btn-sm" onclick="logout()">Keluar</button>
+        </div>
+      </div>
     </div>
   </header>
 
-  <!-- Container Utama -->
-  <main class="main-container">
-    <!-- Tab Navigasi -->
-    <nav class="tabs-nav">
-      <button class="tab-btn active" onclick="switchTab('rooms')">🛌 Manajemen Kamar</button>
-      <button class="tab-btn" onclick="switchTab('reservations')">🧳 Check-in & Check-out</button>
-      <button class="tab-btn" onclick="switchTab('expenses')">💸 Biaya Operasional</button>
-      <button class="tab-btn" onclick="switchTab('reports')">📊 KPI & Rekap Laporan</button>
-    </nav>
-
-    <!-- TAB 1: MANAJEMEN KAMAR -->
-    <section id="tab-rooms" class="tab-content">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <h2 class="card-title">Inventaris & Ketersediaan Kamar</h2>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
-              Pantau status ketersediaan secara real-time dan kelola tarif kamar.
-            </p>
-          </div>
-          <button class="btn btn-primary" onclick="openAddRoomModal()">+ Tambah Kamar</button>
-        </div>
-
-        <!-- Filter Status Kamar -->
-        <div class="filter-bar" style="margin-bottom: 1.25rem;">
-          <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('')">Semua Status</button>
-          <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('Tersedia')">🟢 Tersedia</button>
-          <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('Terisi')">🔵 Terisi</button>
-          <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('Sedang Dibersihkan')">🟡 Sedang Dibersihkan</button>
-          <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('Dalam Perbaikan')">🔴 Dalam Perbaikan</button>
-        </div>
-
-        <!-- Tabel Kamar -->
-        <div class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>No. Kamar</th>
-                <th>Tipe Kamar</th>
-                <th>Tarif / Malam</th>
-                <th>Status Real-Time</th>
-                <th>Keterangan</th>
-                <th style="width: 140px;">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="roomsTableBody">
-              <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                  Memuat data kamar...
-                </td>
-              </tr>
-            </tbody>
-          </table>
+  <!-- =========================================================
+       1. TAMPILAN PUBLIK SMARTEL (LANDING PAGE MULTI-HOTEL PMS)
+  ========================================================== -->
+  <div id="publicHotelView">
+    <!-- Hero Section -->
+    <section id="hero" class="hero-section">
+      <div class="hero-content">
+        <span class="hero-badge">★ Sistem Manajemen Properti & Akuntansi Hotel Standar USALI</span>
+        <h2 class="hero-title">SmarTel: Hotel Property Management System</h2>
+        <p class="hero-subtitle">
+          Platform cloud all-in-one yang dirancang untuk seluruh manajemen hotel, resor, dan akomodasi modern. Kelola ketersediaan kamar real-time, reservasi front desk multi-metode bayar, pengingat otomatis 15 menit sebelum checkout via WhatsApp & Email, serta pembukuan 8 pos beban USALI dan kalkulasi KPI hotel otomatis.
+        </p>
+        <div class="hero-actions">
+          <a href="/register" class="btn btn-gold" style="padding: 0.85rem 1.85rem; font-size: 0.95rem;">
+            🚀 Daftarkan Hotel Anda
+          </a>
+          <a href="/login" class="btn btn-outline" style="color: #fff; border-color: rgba(255,255,255,0.4); padding: 0.85rem 1.5rem;">
+            🔐 Masuk ke Workspace Admin
+          </a>
+          <button class="btn btn-outline-gold" style="color: #e5cdad; border-color: var(--gold); padding: 0.85rem 1.5rem;" onclick="scrollToSection('benefits')">
+            📖 Pelajari Fitur & Manfaat
+          </button>
         </div>
       </div>
     </section>
 
-    <!-- TAB 2: RESERVASI & TRANSAKSI TAMU -->
-    <section id="tab-reservations" class="tab-content" style="display: none;">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <h2 class="card-title">Check-in, Check-out & Transaksi Reservasi</h2>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
-              Catat identitas tamu, hitung durasi otomatis, kelola uang muka (DP), dan terbitkan invoice.
-            </p>
+    <!-- Key Highlights Quick Bar -->
+    <div class="highlights-bar-wrapper">
+      <div class="highlights-grid">
+        <div class="highlight-card">
+          <div class="highlight-icon">🏛️</div>
+          <div class="highlight-info">
+            <h4>100% Standar USALI</h4>
+            <p>8 Pos beban operasional baku lodging industry internasional</p>
           </div>
-          <button class="btn btn-primary" onclick="openCheckInModal()">+ Check-in Tamu</button>
         </div>
 
-        <!-- Filter Status Reservasi -->
-        <div class="filter-bar" style="margin-bottom: 1.25rem;">
-          <button class="btn btn-outline btn-sm" onclick="loadReservations('')">Semua Transaksi</button>
-          <button class="btn btn-outline btn-sm" onclick="loadReservations('Check-in')">🔵 Aktif Menginap (Check-in)</button>
-          <button class="btn btn-outline btn-sm" onclick="loadReservations('Check-out')">🟢 Selesai (Check-out)</button>
-          <button class="btn btn-outline btn-sm" onclick="loadReservations('Dibatalkan')">🔴 Dibatalkan</button>
+        <div class="highlight-card">
+          <div class="highlight-icon">🔔</div>
+          <div class="highlight-info">
+            <h4>Reminder Otomatis 15 Mnt</h4>
+            <p>Pengingat checkout via WhatsApp & Email cegah late checkout</p>
+          </div>
         </div>
 
-        <!-- Tabel Reservasi -->
-        <div class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>No. Invoice</th>
-                <th>Tamu</th>
-                <th>Kamar</th>
-                <th>Periode Menginap</th>
-                <th>Total Tagihan</th>
-                <th>Status Bayar</th>
-                <th>Status Reservasi</th>
-                <th style="width: 170px;">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="reservationsTableBody">
-              <tr>
-                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                  Memuat transaksi reservasi...
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="highlight-card">
+          <div class="highlight-icon">🔐</div>
+          <div class="highlight-info">
+            <h4>Isolasi Data Multi-Tenant</h4>
+            <p>Data tiap properti hotel terenkripsi & terisolasi mandiri</p>
+          </div>
+        </div>
+
+        <div class="highlight-card">
+          <div class="highlight-icon">⚡</div>
+          <div class="highlight-info">
+            <h4>Go Clean Architecture</h4>
+            <p>Performa super cepat, stabil, dan berbasis modular domain</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Manfaat Nyata SmarTel Bagi Hotel -->
+    <section id="benefits" class="section-wrapper">
+      <div class="section-header">
+        <span class="section-tag">Nilai Tambah & Efisiensi Operasional</span>
+        <h2 class="section-title">Manfaat Utama Menggunakan SmarTel PMS</h2>
+        <p class="section-desc">
+          Tingkatkan profitabilitas, koordinasi front office & housekeeping, serta kepatuhan akuntansi hotel Anda tanpa kerumitan pencatatan manual.
+        </p>
+      </div>
+
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-header">
+            <div class="benefit-icon">📈</div>
+            <div class="benefit-title">Standarisasi Finansial Global USALI</div>
+          </div>
+          <p class="benefit-desc">
+            Hilangkan selisih pembukuan dan ketidakteraturan pos pengeluaran. Dengan 8 klasifikasi beban standar USALI, pelaporan keuangan hotel Anda rapi, transparan, dan berstandar audit hotel bintang internasional.
+          </p>
+        </div>
+
+        <div class="benefit-card">
+          <div class="benefit-header">
+            <div class="benefit-icon">⏱️</div>
+            <div class="benefit-title">Pencegahan Keterlambatan Check-out</div>
+          </div>
+          <p class="benefit-desc">
+            Sistem pengingat otomatis (background worker) mengirimkan notifikasi WhatsApp & Email 15 menit sebelum checkout tamu lengkap dengan invoice, meminimalkan antrean resepsionis dan keterlambatan pembersihan kamar.
+          </p>
+        </div>
+
+        <div class="benefit-card">
+          <div class="benefit-header">
+            <div class="benefit-icon">🔄</div>
+            <div class="benefit-title">Koordinasi Kamar & Housekeeping Real-Time</div>
+          </div>
+          <p class="benefit-desc">
+            Status kamar beralih secara otomatis: saat check-in kamar menjadi <strong>Terisi</strong>, dan saat check-out otomatis berganti ke <strong>Sedang Dibersihkan</strong>. Tidak ada risiko kamar ganda (overbooking).
+          </p>
+        </div>
+
+        <div class="benefit-card">
+          <div class="benefit-header">
+            <div class="benefit-icon">💳</div>
+            <div class="benefit-title">Front Desk Cepat & Nota Siap Cetak</div>
+          </div>
+          <p class="benefit-desc">
+            Dukung opsi pembayaran Tunai, Transfer Bank, Kartu Debit/Kredit, dan QRIS. Hasilkan nota dan invoice resmi hotel berformat siap cetak langsung via peramban (<code>window.print()</code>).
+          </p>
+        </div>
+
+        <div class="benefit-card">
+          <div class="benefit-header">
+            <div class="benefit-icon">📊</div>
+            <div class="benefit-title">Analitik KPI Hotel Instan</div>
+          </div>
+          <p class="benefit-desc">
+            Pantau metrik vital industri perhotelan setiap detik: <strong>Occupancy Rate (%)</strong>, <strong>Average Daily Rate (ADR)</strong>, <strong>RevPAR</strong>, dan <strong>Laba/Rugi Bersih (Net Income)</strong> tanpa menunggu rekap bulanan.
+          </p>
+        </div>
+
+        <div class="benefit-card">
+          <div class="benefit-header">
+            <div class="benefit-icon">🛡️</div>
+            <div class="benefit-title">Keamanan & Isolasi Data Mutlak</div>
+          </div>
+          <p class="benefit-desc">
+            Setiap hotel yang mendaftar memiliki partisi data privat yang terikat ke token JWT dan user_id. Data kamar, transaksi reservasi, dan keuangan Anda 100% aman dan tidak dapat dilihat oleh pengelola hotel lain.
+          </p>
         </div>
       </div>
     </section>
 
-    <!-- TAB 3: BIAYA OPERASIONAL (USALI) -->
-    <section id="tab-expenses" class="tab-content" style="display: none;">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <h2 class="card-title">Pencatatan Biaya Operasional (Standar USALI)</h2>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
-              Klasifikasi beban pengeluaran hotel: Utilities, Operating Supplies, Maintenance, Salary, dll.
-            </p>
+    <!-- Section: Fitur Lengkap Sesuai README.md -->
+    <section id="features" class="section-wrapper">
+      <div class="section-header">
+        <span class="section-tag">Solusi Terpadu Front Office & Back Office</span>
+        <h2 class="section-title">Fitur-Fitur Lengkap SmarTel PMS</h2>
+        <p class="section-desc">
+          Seluruh kemampuan dirancang untuk memenuhi alur kerja nyata staf resepsionis, manajer operasional, dan divisi keuangan hotel.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <!-- Fitur 1: Autentikasi & Isolasi Data -->
+        <div class="feature-card">
+          <span class="feature-badge-tag">Keamanan Akun</span>
+          <h3>🔐 Autentikasi & Isolasi Data</h3>
+          <p>Sistem multi-tenant aman yang memungkinkan seluruh hotel mendaftar mandiri dan memiliki ruang kerja terisolasi.</p>
+          <ul class="feature-list">
+            <li>Registrasi akun admin hotel mandiri & login aman via JWT.</li>
+            <li>Kata sandi dienkripsi menggunakan hashing <code>bcrypt</code> satu arah.</li>
+            <li>Token diverifikasi melalui header <code>Authorization: Bearer</code>.</li>
+            <li>Isolasi data penuh per hotel: kamar, reservasi, & beban terikat <code>user_id</code>.</li>
+          </ul>
+        </div>
+
+        <!-- Fitur 2: Manajemen Kamar -->
+        <div class="feature-card">
+          <span class="feature-badge-tag">Housekeeping & Inventaris</span>
+          <h3>🛌 Manajemen Kamar Real-Time</h3>
+          <p>Kelola seluruh inventaris kamar, tipe kamar, tarif sewa per malam, dan pantau status ketersediaan secara langsung.</p>
+          <ul class="feature-list">
+            <li>4 Status dinamis: 🟢 Tersedia, 🔵 Terisi, 🟡 Dibersihkan, 🔴 Perbaikan.</li>
+            <li>Pengaturan tarif sewa fleksibel dan rincian fasilitas kamar.</li>
+            <li>Filter cepat ketersediaan kamar untuk front desk.</li>
+            <li>Pembaruan status kamar otomatis berdasarkan alur reservasi.</li>
+          </ul>
+        </div>
+
+        <!-- Fitur 3: Reservasi & Nota Transaksi -->
+        <div class="feature-card">
+          <span class="feature-badge-tag">Front Desk & Kasir</span>
+          <h3>🧳 Check-in, Check-out & Nota</h3>
+          <p>Alur check-in cepat dengan pencatatan identitas tamu, estimasi tagihan otomatis, dan cetak invoice resmi.</p>
+          <ul class="feature-list">
+            <li>Pencatatan identitas tamu (KTP/Passport, WhatsApp, Email).</li>
+            <li>Metode pembayaran: Tunai (Cash), Transfer Bank, Kartu Debit/Kredit, & QRIS.</li>
+            <li>Kalkulasi durasi malam, uang muka (DP), dan sisa pelunasan otomatis.</li>
+            <li>Lembar nota/invoice resmi siap cetak langsung via browser (Print).</li>
+          </ul>
+        </div>
+
+        <!-- Fitur 4: Reminder WhatsApp & Email -->
+        <div class="feature-card">
+          <span class="feature-badge-tag">Notifikasi Tamu</span>
+          <h3>🔔 Reminder Checkout 15 Menit</h3>
+          <p>Layanan pengingat tamu otomatis dan on-demand untuk mencegah keterlambatan check-out serta mempermudah kasir.</p>
+          <ul class="feature-list">
+            <li>Background Worker otomatis memindai reservasi 15 menit sebelum checkout.</li>
+            <li>Tombol aksi cepat 1-klik <code>🔔 Remind</code> pada tabel reservasi.</li>
+            <li>WhatsApp Reminder dengan tautan langsung <code>wa.me</code> siap kirim.</li>
+            <li>Template email HTML profesional berisi sisa tagihan & salam hotel.</li>
+          </ul>
+        </div>
+
+        <!-- Fitur 5: Beban Operasional USALI -->
+        <div class="feature-card">
+          <span class="feature-badge-tag">Akuntansi Perhotelan</span>
+          <h3>💸 Beban Operasional 8 Kategori USALI</h3>
+          <p>Pencatatan biaya pengeluaran operasional hotel sesuai struktur baku USALI (Uniform System of Accounts for Lodging).</p>
+          <ul class="feature-list">
+            <li>8 Kategori baku: Utilities, Supplies, Maintenance, Salaries, Marketing, dll.</li>
+            <li>Pencatatan tanggal, item pengeluaran, nominal biaya, dan nomor bukti/kuitansi.</li>
+            <li>Filter instan pengeluaran berdasarkan kategori USALI.</li>
+            <li>Rekapitulasi total beban operasional hotel secara akurat.</li>
+          </ul>
+        </div>
+
+        <!-- Fitur 6: Dashboard KPI & Laba / Rugi -->
+        <div class="feature-card">
+          <span class="feature-badge-tag">Business Intelligence</span>
+          <h3>📊 Dashboard KPI & Laba / Rugi</h3>
+          <p>Visualisasi metrik performa utama perhotelan untuk pengambilan keputusan manajerial yang cepat dan tepat.</p>
+          <ul class="feature-list">
+            <li><strong>Occupancy Rate (%)</strong> = (Kamar Terisi / Total Kamar) × 100.</li>
+            <li><strong>ADR (Average Daily Rate)</strong> = Pendapatan / Kamar Terjual.</li>
+            <li><strong>RevPAR</strong> = Pendapatan / Total Kamar Tersedia.</li>
+            <li><strong>Laba / Rugi Bersih (Net Income)</strong> = Pendapatan - Beban Operasional.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section: Standar USALI -->
+    <section id="usali" class="section-wrapper">
+      <div class="usali-container">
+        <div class="section-header" style="margin-bottom: 1.5rem;">
+          <span class="section-tag">Kepatuhan Standar Perhotelan Global</span>
+          <h2 class="section-title">Standar USALI (Uniform System of Accounts for the Lodging Industry)</h2>
+          <p class="section-desc">
+            SmarTel mengadopsi 8 klasifikasi beban operasional USALI secara utuh, memberikan keseragaman dan akurasi pelaporan finansial yang diakui oleh perbankan, auditor, dan investor perhotelan dunia.
+          </p>
+        </div>
+
+        <div class="usali-cards-grid">
+          <div class="usali-item-card">
+            <h4>💡 1. Utilities</h4>
+            <p>Tagihan listrik PLN, air PDAM, gas operasional dapur/laundry, dan koneksi internet WiFi berkecepatan tinggi.</p>
           </div>
-          <div style="display: flex; align-items: center; gap: 1rem;">
-            <div style="text-align: right; background: #fef2f2; padding: 0.5rem 1rem; border-radius: var(--radius); border: 1px solid #fecaca;">
-              <small style="color: var(--text-muted); display: block;">Total Pengeluaran:</small>
-              <strong id="totalExpenseDisplay" style="color: var(--danger); font-size: 1.1rem;">Rp 0</strong>
+
+          <div class="usali-item-card">
+            <h4>🧼 2. Operating Supplies</h4>
+            <p>Linen kamar tidur, handuk mandi, amenities perlengkapan mandi tamu, deterjen, dan bahan pembersih kimia.</p>
+          </div>
+
+          <div class="usali-item-card">
+            <h4>🔧 3. Repairs & Maintenance</h4>
+            <p>Servis berkala unit AC, perbaikan pipa plumbing, genset hotel, lift, dan perawatan fisik gedung.</p>
+          </div>
+
+          <div class="usali-item-card">
+            <h4>👥 4. Salaries & Wages</h4>
+            <p>Gaji pokok karyawan, upah lembur staf front office & housekeeping, tunjangan, dan jaminan ketenagakerjaan.</p>
+          </div>
+
+          <div class="usali-item-card">
+            <h4>📢 5. Marketing & Sales</h4>
+            <p>Biaya promosi digital, kampanye iklan, komisi saluran Online Travel Agent (OTA), dan brosur hotel.</p>
+          </div>
+
+          <div class="usali-item-card">
+            <h4>📁 6. Administrative & General</h4>
+            <p>Pengadaan ATK kantor resepsionis, lisensi perangkat lunak, premi asuransi properti, dan biaya perizinan.</p>
+          </div>
+
+          <div class="usali-item-card">
+            <h4>🍽️ 7. Food & Beverage</h4>
+            <p>Pembelian bahan baku dapur restoran hotel, sarapan pagi (breakfast buffet), dan persediaan minibar.</p>
+          </div>
+
+          <div class="usali-item-card">
+            <h4>📦 8. Other Expenses</h4>
+            <p>Beban operasional pendukung lainnya di luar tujuh klasifikasi utama yang relevan dengan operasional hotel.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section: Arsitektur & Keamanan -->
+    <section id="architecture" class="section-wrapper">
+      <div class="section-header">
+        <span class="section-tag">Fondasi Teknologi Kelas Profesional</span>
+        <h2 class="section-title">Arsitektur Modular Backend Go</h2>
+        <p class="section-desc">
+          Dibangun dengan prinsip <strong>Modular / Clean Architecture</strong> (Package by Feature) menggunakan bahasa pemrograman Go yang terkenal akan kecepatan dan keandalannya.
+        </p>
+      </div>
+
+      <div class="tech-grid">
+        <div class="tech-card">
+          <h3>⚡ Go (Gin Framework)</h3>
+          <p>Framework HTTP berkecepatan tinggi dengan alokasi memori minimal, menjamin respons REST API sub-millisecond bahkan saat volume transaksi padat.</p>
+        </div>
+
+        <div class="tech-card">
+          <h3>🏛️ Clean Architecture</h3>
+          <p>Pemisahan tanggung jawab terisolasi per domain (Model, Repository, Service, Handler) di direktori <code>internal/</code> yang rapi dan mudah di-maintain.</p>
+        </div>
+
+        <div class="tech-card">
+          <h3>🗄️ PostgreSQL & GORM</h3>
+          <p>Penyimpanan data relasional berstandar ACID dengan auto-migrasi aman via koneksi <code>DATABASE_URL</code> dinamis tanpa hardcoded credentials.</p>
+        </div>
+
+        <div class="tech-card">
+          <h3>🔒 Keamanan Multi-Tenant</h3>
+          <p>Otorisasi stateless Bearer JWT, password hashing <code>bcrypt</code>, dan isolasi filter <code>WHERE user_id = ?</code> pada setiap kueri basis data.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section: Cara Memulai (3 Langkah) -->
+    <section id="steps" class="section-wrapper">
+      <div class="section-header">
+        <span class="section-tag">Mudah Digunakan</span>
+        <h2 class="section-title">3 Langkah Memulai Bersama SmarTel</h2>
+        <p class="section-desc">
+          Daftarkan hotel Anda sekarang dan rasakan kemudahan pengelolaan properti dalam hitungan menit.
+        </p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Daftarkan Hotel Anda</h3>
+          <p>Buat akun properti baru dengan mengisi nama hotel, email resmi pengelola, dan kata sandi di formulir registrasi.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>Input Kamar & Tarif</h3>
+          <p>Tambahkan inventaris kamar hotel Anda, tentukan nomor kamar, tipe (Standard/Deluxe/Suite), dan harga sewa per malam.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>Kelola & Pantau KPI</h3>
+          <p>Lakukan check-in tamu, cetak nota resmi, catat biaya USALI, dan pantau kenaikan pendapatan serta Occupancy Rate hotel.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section: CTA Banner -->
+    <section class="section-wrapper">
+      <div class="cta-box">
+        <h2>Siap Mengoptimalkan Manajemen Hotel Anda?</h2>
+        <p>
+          Bergabunglah dengan platform SmarTel: Hotel Property Management System. Terbuka untuk seluruh hotel independen, resor, hingga boutique hotel.
+        </p>
+        <div class="cta-actions">
+          <a href="/register" class="btn btn-gold" style="padding: 0.85rem 2rem; font-size: 1rem;">
+            🚀 Daftarkan Akun Hotel Sekarang
+          </a>
+          <a href="/login" class="btn btn-outline" style="color: #fff; border-color: rgba(255,255,255,0.4); padding: 0.85rem 1.75rem;">
+            🔐 Masuk ke Workspace Manajemen
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer Publik SmarTel -->
+    <footer id="contact" class="hotel-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <h2>SmarTel: Hotel PMS</h2>
+          <p>
+            Hotel Property Management System & Akuntansi Operasional Berstandar USALI (Uniform System of Accounts for the Lodging Industry). Solusi all-in-one untuk seluruh tipe hotel dan resort.
+          </p>
+          <div style="margin-top: 1rem; color: var(--gold); font-size: 0.85rem;">
+            🌐 Multi-Hotel SaaS Property Management & Accounting
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Modul Unggulan</h4>
+          <ul>
+            <li>Manajemen Kamar & Housekeeping</li>
+            <li>Front Desk & Multi-Metode Bayar</li>
+            <li>Pengingat Checkout WhatsApp & Email</li>
+            <li>Beban Operasional 8 Kategori USALI</li>
+            <li>Dashboard Analisis KPI (ADR/RevPAR)</li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Akses Portal Hotel</h4>
+          <ul>
+            <li><a href="/login" style="color: #cbd5e1; text-decoration: none;">Masuk ke Konsol Hotel</a></li>
+            <li><a href="/register" style="color: #cbd5e1; text-decoration: none;">Daftarkan Properti Hotel Baru</a></li>
+            <li><a onclick="handleStaffPortalAccess()" style="color: var(--gold); cursor: pointer; text-decoration: underline;">Buka Workspace Aktif</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 SmarTel: Hotel Property Management System. Seluruh hak cipta dilindungi.</div>
+        <div>Kepatuhan Penuh Standar USALI (Uniform System of Accounts for the Lodging Industry)</div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- =========================================================
+       2. WORKSPACE MANAJEMEN HOTEL & KEUANGAN (SMARTEL CONSOLE)
+  ========================================================== -->
+  <div id="managementWorkspace" style="display: none;">
+    <div class="workspace-wrapper">
+      <!-- Portal Top Bar -->
+      <div class="portal-topbar">
+        <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+          <button class="btn btn-outline btn-sm" onclick="showPublicView()">
+            ← Kembali ke Beranda SmarTel
+          </button>
+          <div>
+            <strong style="font-size: 1.05rem; color: var(--primary);">SmarTel: Hotel Property Management System</strong>
+            <div style="font-size: 0.775rem; color: var(--text-muted);">
+              Konsol Operasional & Akuntansi Standar USALI • <span id="workspaceHotelName" style="color: var(--gold); font-weight: 700;">Hotel Anda</span>
             </div>
-            <button class="btn btn-primary" onclick="openAddExpenseModal()">+ Catat Pengeluaran</button>
           </div>
         </div>
-
-        <!-- Filter Kategori USALI -->
-        <div id="expenseFilterBar" class="filter-bar" style="margin-bottom: 1.25rem;">
-          <button class="btn btn-outline btn-sm" onclick="filterExpenses('')">Semua Kategori</button>
-        </div>
-
-        <!-- Tabel Pengeluaran -->
-        <div class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Tanggal</th>
-                <th>Kategori USALI</th>
-                <th>Keterangan / Item</th>
-                <th>Jumlah (IDR)</th>
-                <th>Catatan</th>
-                <th style="width: 140px;">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="expensesTableBody">
-              <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                  Memuat data pengeluaran...
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 4: KPI & LAPORAN KEUANGAN USALI -->
-    <section id="tab-reports" class="tab-content" style="display: none;">
-      <!-- Grid Indikator Kinerja Utama (KPI Hotel) -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-        <!-- Occupancy Rate -->
-        <div class="card" style="margin-bottom: 0;">
-          <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">OCCUPANCY RATE (Tingkat Hunian)</div>
-          <div id="kpiOccupancy" style="font-size: 2rem; font-weight: 700; color: var(--primary); margin: 0.5rem 0;">0%</div>
-          <small style="color: var(--text-muted);">(Kamar Terisi / Total Kamar) × 100</small>
-        </div>
-
-        <!-- ADR -->
-        <div class="card" style="margin-bottom: 0;">
-          <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">ADR (Average Daily Rate)</div>
-          <div id="kpiADR" style="font-size: 1.75rem; font-weight: 700; color: var(--secondary); margin: 0.5rem 0;">Rp 0</div>
-          <small style="color: var(--text-muted);">Pendapatan / Kamar Terjual</small>
-        </div>
-
-        <!-- RevPAR -->
-        <div class="card" style="margin-bottom: 0;">
-          <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">RevPAR (Revenue per Available Room)</div>
-          <div id="kpiRevPAR" style="font-size: 1.75rem; font-weight: 700; color: var(--accent); margin: 0.5rem 0;">Rp 0</div>
-          <small style="color: var(--text-muted);">Pendapatan / Total Kamar Tersedia</small>
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+          <span class="portal-badge">Mode Admin Aktif</span>
+          <button class="btn btn-gold btn-sm" onclick="openCheckInModal()">+ Check-in Tamu Baru</button>
         </div>
       </div>
 
-      <!-- Ringkasan Laba / Rugi & Inventaris Kamar -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
-        <!-- Rekapitulasi Laba / Rugi -->
-        <div class="card" style="margin-bottom: 0;">
+      <!-- Tab Navigasi Manajemen -->
+      <nav class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('rooms')">Ketersediaan Kamar</button>
+        <button class="tab-btn" onclick="switchTab('reservations')">Transaksi & Check-in / Out</button>
+        <button class="tab-btn" onclick="switchTab('expenses')">Beban Biaya Operasional (USALI)</button>
+        <button class="tab-btn" onclick="switchTab('reports')">Dashboard KPI & Laba / Rugi</button>
+      </nav>
+
+      <!-- TAB 1: MANAJEMEN KAMAR -->
+      <section id="tab-rooms" class="tab-content">
+        <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Rekapitulasi Omzet & Laba/Rugi</h3>
-            <span id="badgeNetIncomeStatus" class="badge badge-success">LABA</span>
-          </div>
-          <div style="margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-              <span>Total Pendapatan Kamar (Revenue):</span>
-              <strong id="metricRevenue" style="color: var(--primary);">Rp 0</strong>
+            <div>
+              <h2 class="card-title">Inventaris & Ketersediaan Kamar</h2>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                Pantau status kamar secara real-time dan atur tarif sewa per malam hotel Anda.
+              </p>
             </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span>Total Beban Operasional (Expenses):</span>
-              <strong id="metricExpenses" style="color: var(--danger);">- Rp 0</strong>
-            </div>
+            <button class="btn btn-primary" onclick="openAddRoomModal()">+ Tambah Kamar</button>
           </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.15rem;">
-            <strong>Laba / Rugi Bersih (Net Income):</strong>
-            <strong id="metricNetIncome" style="color: var(--success); font-size: 1.35rem;">Rp 0</strong>
+
+          <!-- Filter Status Kamar -->
+          <div class="filter-bar" style="margin-bottom: 1.25rem;">
+            <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('')">Semua Status</button>
+            <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('Tersedia')">🟢 Tersedia</button>
+            <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('Terisi')">🔵 Terisi</button>
+            <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('Sedang Dibersihkan')">🟡 Sedang Dibersihkan</button>
+            <button class="btn btn-outline btn-sm" onclick="filterRoomByStatus('Dalam Perbaikan')">🔴 Dalam Perbaikan</button>
+          </div>
+
+          <!-- Tabel Kamar -->
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>No. Kamar</th>
+                  <th>Tipe Kamar</th>
+                  <th>Tarif / Malam</th>
+                  <th>Status Real-Time</th>
+                  <th>Keterangan</th>
+                  <th style="width: 140px;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="roomsTableBody">
+                <tr>
+                  <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    Memuat data kamar hotel...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
+      </section>
 
-        <!-- Rekap Inventaris Kamar Real-Time -->
-        <div class="card" style="margin-bottom: 0;">
+      <!-- TAB 2: RESERVASI & TRANSAKSI TAMU -->
+      <section id="tab-reservations" class="tab-content" style="display: none;">
+        <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Status Inventaris Kamar</h3>
-            <span class="badge badge-secondary">Total: <span id="invTotalRooms">0</span> Kamar</span>
+            <div>
+              <h2 class="card-title">Check-in, Check-out & Reminder Otomatis</h2>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                Kelola identitas tamu, uang muka (DP), metode pembayaran, dan notifikasi pengingat checkout 15 menit.
+              </p>
+            </div>
+            <button class="btn btn-primary" onclick="openCheckInModal()">+ Check-in Tamu</button>
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.9rem;">
-            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 0.75rem; border-radius: var(--radius);">
-              <div style="color: #166534;">🟢 Tersedia</div>
-              <strong id="invAvailableRooms" style="font-size: 1.25rem; color: #166534;">0</strong>
+
+          <!-- Filter Status Reservasi -->
+          <div class="filter-bar" style="margin-bottom: 1.25rem;">
+            <button class="btn btn-outline btn-sm" onclick="loadReservations('')">Semua Transaksi</button>
+            <button class="btn btn-outline btn-sm" onclick="loadReservations('Check-in')">🔵 Aktif Menginap (Check-in)</button>
+            <button class="btn btn-outline btn-sm" onclick="loadReservations('Check-out')">🟢 Selesai (Check-out)</button>
+            <button class="btn btn-outline btn-sm" onclick="loadReservations('Dibatalkan')">🔴 Dibatalkan</button>
+          </div>
+
+          <!-- Tabel Reservasi -->
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>No. Invoice</th>
+                  <th>Tamu</th>
+                  <th>Kamar</th>
+                  <th>Periode Menginap</th>
+                  <th>Tagihan & Metode</th>
+                  <th>Status Bayar</th>
+                  <th>Status Reservasi</th>
+                  <th>Pengingat (15 Mnt)</th>
+                  <th style="width: 200px;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="reservationsTableBody">
+                <tr>
+                  <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    Memuat transaksi reservasi...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: BIAYA OPERASIONAL (USALI) -->
+      <section id="tab-expenses" class="tab-content" style="display: none;">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Pencatatan Biaya Operasional (Standar USALI)</h2>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                8 Klasifikasi Beban: Utilities, Operating Supplies, Maintenance, Salaries, Marketing, Admin, F&B, dan Lain-lain.
+              </p>
             </div>
-            <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 0.75rem; border-radius: var(--radius);">
-              <div style="color: #1e40af;">🔵 Terisi</div>
-              <strong id="invOccupiedRooms" style="font-size: 1.25rem; color: #1e40af;">0</strong>
+            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+              <div style="text-align: right; background: #fef2f2; padding: 0.5rem 1rem; border-radius: var(--radius-sm); border: 1px solid #fecaca;">
+                <small style="color: var(--text-muted); display: block;">Total Pengeluaran:</small>
+                <strong id="totalExpenseDisplay" style="color: var(--danger); font-size: 1.1rem;">Rp 0</strong>
+              </div>
+              <button class="btn btn-primary" onclick="openAddExpenseModal()">+ Catat Pengeluaran</button>
             </div>
-            <div style="background: #fefce8; border: 1px solid #fef08a; padding: 0.75rem; border-radius: var(--radius);">
-              <div style="color: #854d0e;">🟡 Sedang Dibersihkan</div>
-              <strong id="invCleaningRooms" style="font-size: 1.25rem; color: #854d0e;">0</strong>
+          </div>
+
+          <!-- Filter Kategori USALI -->
+          <div id="expenseFilterBar" class="filter-bar" style="margin-bottom: 1.25rem;">
+            <button class="btn btn-outline btn-sm" onclick="filterExpenses('')">Semua Kategori</button>
+          </div>
+
+          <!-- Tabel Pengeluaran -->
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Kategori USALI</th>
+                  <th>Keterangan / Item</th>
+                  <th>Jumlah (IDR)</th>
+                  <th>Catatan</th>
+                  <th style="width: 140px;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="expensesTableBody">
+                <tr>
+                  <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    Memuat data pengeluaran...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: KPI & LAPORAN KEUANGAN USALI -->
+      <section id="tab-reports" class="tab-content" style="display: none;">
+        <!-- Grid Indikator Kinerja Utama (KPI Hotel) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="card" style="margin-bottom: 0;">
+            <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">OCCUPANCY RATE (Tingkat Hunian)</div>
+            <div id="kpiOccupancy" style="font-size: 2.25rem; font-weight: 700; color: var(--primary); margin: 0.5rem 0;">0%</div>
+            <small style="color: var(--text-muted);">(Kamar Terisi / Total Kamar) × 100</small>
+          </div>
+
+          <div class="card" style="margin-bottom: 0;">
+            <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">ADR (Average Daily Rate)</div>
+            <div id="kpiADR" style="font-size: 1.85rem; font-weight: 700; color: var(--gold); margin: 0.5rem 0;">Rp 0</div>
+            <small style="color: var(--text-muted);">Pendapatan / Kamar Terjual</small>
+          </div>
+
+          <div class="card" style="margin-bottom: 0;">
+            <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">RevPAR (Revenue per Available Room)</div>
+            <div id="kpiRevPAR" style="font-size: 1.85rem; font-weight: 700; color: #0284c7; margin: 0.5rem 0;">Rp 0</div>
+            <small style="color: var(--text-muted);">Pendapatan / Total Kamar Tersedia</small>
+          </div>
+        </div>
+
+        <!-- Ringkasan Laba / Rugi & Inventaris Kamar -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div class="card" style="margin-bottom: 0;">
+            <div class="card-header">
+              <h3 class="card-title">Rekapitulasi Omzet & Laba/Rugi</h3>
+              <span id="badgeNetIncomeStatus" class="badge badge-success">LABA</span>
             </div>
-            <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 0.75rem; border-radius: var(--radius);">
-              <div style="color: #991b1b;">🔴 Dalam Perbaikan</div>
-              <strong id="invMaintenanceRooms" style="font-size: 1.25rem; color: #991b1b;">0</strong>
+            <div style="margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span>Total Pendapatan Kamar (Revenue):</span>
+                <strong id="metricRevenue" style="color: var(--primary);">Rp 0</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Total Beban Operasional (Expenses):</span>
+                <strong id="metricExpenses" style="color: var(--danger);">- Rp 0</strong>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.15rem;">
+              <strong>Laba / Rugi Bersih (Net Income):</strong>
+              <strong id="metricNetIncome" style="color: var(--success); font-size: 1.4rem;">Rp 0</strong>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom: 0;">
+            <div class="card-header">
+              <h3 class="card-title">Status Inventaris Kamar</h3>
+              <span class="badge badge-secondary">Total: <span id="invTotalRooms">0</span> Kamar</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.9rem;">
+              <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 0.75rem; border-radius: var(--radius-sm);">
+                <div style="color: #166534;">🟢 Tersedia</div>
+                <strong id="invAvailableRooms" style="font-size: 1.25rem; color: #166534;">0</strong>
+              </div>
+              <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 0.75rem; border-radius: var(--radius-sm);">
+                <div style="color: #1e40af;">🔵 Terisi</div>
+                <strong id="invOccupiedRooms" style="font-size: 1.25rem; color: #1e40af;">0</strong>
+              </div>
+              <div style="background: #fefce8; border: 1px solid #fef08a; padding: 0.75rem; border-radius: var(--radius-sm);">
+                <div style="color: #854d0e;">🟡 Sedang Dibersihkan</div>
+                <strong id="invCleaningRooms" style="font-size: 1.25rem; color: #854d0e;">0</strong>
+              </div>
+              <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 0.75rem; border-radius: var(--radius-sm);">
+                <div style="color: #991b1b;">🔴 Dalam Perbaikan</div>
+                <strong id="invMaintenanceRooms" style="font-size: 1.25rem; color: #991b1b;">0</strong>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Breakdown Beban USALI -->
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Rincian Beban Operasional Standar USALI</h3>
-          <small style="color: var(--text-muted);">Distribusi pengeluaran per klasifikasi beban lodging industry</small>
+        <!-- Breakdown Beban USALI -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Rincian Beban Operasional Standar USALI</h3>
+            <small style="color: var(--text-muted);">Distribusi pengeluaran per klasifikasi beban lodging industry</small>
+          </div>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Klasifikasi Beban USALI</th>
+                  <th>Nominal Pengeluaran</th>
+                  <th style="width: 250px;">Persentase Beban</th>
+                </tr>
+              </thead>
+              <tbody id="usaliBreakdownTableBody">
+                <tr>
+                  <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    Memuat rincian laporan USALI...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Klasifikasi Beban USALI</th>
-                <th>Nominal Pengeluaran</th>
-                <th style="width: 250px;">Persentase Beban</th>
-              </tr>
-            </thead>
-            <tbody id="usaliBreakdownTableBody">
-              <tr>
-                <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                  Memuat rincian laporan USALI...
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  </main>
+      </section>
+    </div>
+  </div>
 
+  <!-- =========================================================
+       MODAL FORMS (KAMAR, CHECK-IN, INVOICE, PENGELUARAN)
+  ========================================================== -->
   <!-- MODAL FORM TAMBAH / EDIT KAMAR -->
   <div id="roomModal" class="modal-overlay">
     <div class="modal-card">
@@ -308,7 +770,7 @@
 
         <div class="form-group">
           <label for="roomPrice">Tarif per Malam (IDR)</label>
-          <input type="number" id="roomPrice" class="form-control" placeholder="Contoh: 500000" min="1" step="1000" required>
+          <input type="number" id="roomPrice" class="form-control" placeholder="Contoh: 650000" min="1" step="1000" required>
         </div>
 
         <div class="form-group">
@@ -323,7 +785,7 @@
 
         <div class="form-group">
           <label for="roomDescription">Keterangan / Fasilitas Tambahan</label>
-          <input type="text" id="roomDescription" class="form-control" placeholder="Contoh: Lantai 2, Double Bed, City View">
+          <input type="text" id="roomDescription" class="form-control" placeholder="Contoh: Lantai 3, King Bed, Balkon Pool View">
         </div>
 
         <div class="modal-footer">
@@ -346,7 +808,7 @@
 
       <form id="checkInForm" onsubmit="handleCheckInSubmit(event)">
         <div class="form-group">
-          <label for="resRoomId">Pilih Kamar (Hanya Status Tersedia)</label>
+          <label for="resRoomId">Pilih Kamar (Status Tersedia)</label>
           <select id="resRoomId" class="form-control" onchange="calculateEstimate()" required>
             <option value="">Memuat kamar tersedia...</option>
           </select>
@@ -363,9 +825,15 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="resGuestPhone">Nomor Telepon / WhatsApp</label>
-          <input type="text" id="resGuestPhone" class="form-control" placeholder="0812...">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label for="resGuestPhone">Nomor WhatsApp / Telepon</label>
+            <input type="text" id="resGuestPhone" class="form-control" placeholder="0812...">
+          </div>
+          <div class="form-group">
+            <label for="resGuestEmail">Email Tamu (Reminder Checkout)</label>
+            <input type="email" id="resGuestEmail" class="form-control" placeholder="tamu@example.com">
+          </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
@@ -379,13 +847,24 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="resDownPayment">Uang Muka (DP) - IDR</label>
-          <input type="number" id="resDownPayment" class="form-control" value="0" min="0" step="1000" oninput="calculateEstimate()">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label for="resDownPayment">Uang Muka (DP) - IDR</label>
+            <input type="number" id="resDownPayment" class="form-control" value="0" min="0" step="1000" oninput="calculateEstimate()">
+          </div>
+          <div class="form-group">
+            <label for="resPaymentMethod">Metode Pembayaran</label>
+            <select id="resPaymentMethod" class="form-control" required>
+              <option value="Tunai">💵 Tunai (Cash)</option>
+              <option value="Transfer Bank">🏦 Transfer Bank</option>
+              <option value="Kartu Debit/Kredit">💳 Kartu Debit/Kredit</option>
+              <option value="QRIS">📱 QRIS</option>
+            </select>
+          </div>
         </div>
 
         <!-- Box Kalkulasi Real-Time -->
-        <div style="background: #f1f5f9; padding: 0.85rem; border-radius: var(--radius); margin-bottom: 1.25rem; font-size: 0.85rem;">
+        <div style="background: #fdfaf5; border: 1px solid #ebd9be; padding: 0.85rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem; font-size: 0.85rem;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
             <span>Durasi:</span>
             <strong id="estNights">1 Malam</strong>
@@ -402,7 +881,7 @@
 
         <div class="form-group">
           <label for="resNotes">Catatan Tambahan</label>
-          <input type="text" id="resNotes" class="form-control" placeholder="Misal: Tambah extra bed, non-smoking room">
+          <input type="text" id="resNotes" class="form-control" placeholder="Misal: Non-smoking room, extra bed">
         </div>
 
         <div class="modal-footer">
@@ -417,13 +896,11 @@
   <div id="invoiceModal" class="modal-overlay">
     <div class="modal-card modal-lg">
       <div class="modal-header">
-        <h3>🧾 Nota Pembayaran Tamu</h3>
+        <h3>🧾 Nota Resmi Tamu</h3>
         <button class="modal-close" onclick="closeInvoiceModal()">&times;</button>
       </div>
 
-      <div id="invoiceModalBody">
-        <!-- Konten invoice dinamis -->
-      </div>
+      <div id="invoiceModalBody"></div>
 
       <div class="modal-footer">
         <button type="button" class="btn btn-outline" onclick="closeInvoiceModal()">Tutup</button>
@@ -447,9 +924,7 @@
 
         <div class="form-group">
           <label for="expCategory">Kategori Beban USALI</label>
-          <select id="expCategory" class="form-control" required>
-            <!-- Diisi otomatis dari API /api/expenses/categories -->
-          </select>
+          <select id="expCategory" class="form-control" required></select>
         </div>
 
         <div class="form-group">
@@ -492,7 +967,62 @@
   <script src="/static/js/expenses.js"></script>
   <script src="/static/js/dashboard.js"></script>
   <script>
-    // Tab switching
+    let isStaffLoggedIn = false;
+
+    function scrollToSection(sectionId) {
+      // Pastikan tampilan publik aktif jika ingin scroll section
+      const pubView = document.getElementById("publicHotelView");
+      if (pubView.style.display === "none") {
+        showPublicView();
+      }
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 50);
+    }
+
+    function showPublicView(e) {
+      if (e) e.preventDefault();
+      document.getElementById("publicHotelView").style.display = "block";
+      document.getElementById("managementWorkspace").style.display = "none";
+      const btn = document.getElementById("btnSwitchView");
+      if (btn) btn.textContent = "🏢 Buka Workspace Manajemen";
+    }
+
+    function showWorkspaceView() {
+      if (!isStaffLoggedIn) {
+        window.location.href = "/login";
+        return;
+      }
+      document.getElementById("publicHotelView").style.display = "none";
+      document.getElementById("managementWorkspace").style.display = "block";
+      const btn = document.getElementById("btnSwitchView");
+      if (btn) btn.textContent = "🌐 Lihat Beranda SmarTel";
+      
+      // Load data awal untuk workspace
+      loadRooms();
+    }
+
+    function toggleWorkspaceView() {
+      const ws = document.getElementById("managementWorkspace");
+      if (ws.style.display === "none" || !ws.style.display) {
+        showWorkspaceView();
+      } else {
+        showPublicView();
+      }
+    }
+
+    function handleStaffPortalAccess() {
+      if (isStaffLoggedIn) {
+        showWorkspaceView();
+      } else {
+        window.location.href = "/login";
+      }
+    }
+
+    // Tab switching dalam Workspace Manajemen
     function switchTab(tabKey) {
       document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
       document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
@@ -501,11 +1031,11 @@
       if (target) target.style.display = "block";
 
       const activeBtn = Array.from(document.querySelectorAll(".tab-btn")).find(btn => 
-        btn.getAttribute("onclick").includes(tabKey)
+        btn.getAttribute("onclick") && btn.getAttribute("onclick").includes(tabKey)
       );
       if (activeBtn) activeBtn.classList.add("active");
 
-      // Load data sesuai tab
+      // Muat data sesuai tab yang dipilih
       if (tabKey === "rooms") {
         loadRooms();
       } else if (tabKey === "reservations") {
@@ -523,25 +1053,46 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
+      // Cek apakah ada token login staf
       const token = getToken();
-      if (!token) {
-        window.location.href = "/login";
-        return;
+      if (token) {
+        try {
+          const res = await authFetch("/api/auth/me");
+          if (res.ok) {
+            const data = await res.json();
+            isStaffLoggedIn = true;
+            
+            // Perbarui nama hotel di navbar dan topbar workspace
+            const hotelName = data.user.name || "Admin Hotel";
+            document.getElementById("userNameDisplay").textContent = `👤 ${hotelName}`;
+            const wsName = document.getElementById("workspaceHotelName");
+            if (wsName) wsName.textContent = hotelName;
+
+            document.getElementById("guestActionGroup").style.display = "none";
+            document.getElementById("userActionGroup").style.display = "flex";
+
+            // Jika ada query param ?view=portal, buka langsung workspace
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get("view") === "portal") {
+              showWorkspaceView();
+              return;
+            }
+          }
+        } catch (err) {
+          // Token kedaluwarsa atau tidak valid, bersihkan sesi
+          localStorage.removeItem("hotel_auth_token");
+          localStorage.removeItem("hotel_auth_user");
+          isStaffLoggedIn = false;
+        }
       }
 
-      // Verifikasi token & ambil data profil pengguna
-      try {
-        const res = await authFetch("/api/auth/me");
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        document.getElementById("userNameDisplay").textContent = `👤 ${data.user.name}`;
-      } catch (err) {
-        logout();
-        return;
+      // Default jika tidak login: Tampilkan Website Publik SmarTel
+      if (!isStaffLoggedIn) {
+        isStaffLoggedIn = false;
+        document.getElementById("guestActionGroup").style.display = "flex";
+        document.getElementById("userActionGroup").style.display = "none";
+        showPublicView();
       }
-
-      // Muat data awal
-      loadRooms();
     });
   </script>
 </body>

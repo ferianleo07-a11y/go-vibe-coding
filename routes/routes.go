@@ -4,8 +4,13 @@ import (
 	"net/http"
 
 	"hotel-app/config"
-	"hotel-app/controllers"
-	"hotel-app/middlewares"
+	"hotel-app/internal/auth"
+	"hotel-app/internal/expense"
+	"hotel-app/internal/middleware"
+	"hotel-app/internal/notification"
+	"hotel-app/internal/report"
+	"hotel-app/internal/reservation"
+	"hotel-app/internal/room"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,54 +38,87 @@ func SetupRouter() *gin.Engine {
 	r.StaticFile("/login", "./web/login.html")
 	r.StaticFile("/register", "./web/register.html")
 
+	// Dependency Injection untuk masing-masing domain/fitur
+	dbReadyFunc := func() bool { return config.DB != nil }
+
+	// Notification Service (WhatsApp & Email Reminder)
+	notifyService := notification.NewService()
+
+	// Auth Domain
+	authRepo := auth.NewRepository(config.DB)
+	authService := auth.NewService(authRepo)
+	authHandler := auth.NewHandler(authService, dbReadyFunc)
+
+	// Room Domain
+	roomRepo := room.NewRepository(config.DB)
+	roomService := room.NewService(roomRepo)
+	roomHandler := room.NewHandler(roomService, dbReadyFunc)
+
+	// Reservation Domain
+	reservationRepo := reservation.NewRepository(config.DB)
+	reservationService := reservation.NewService(reservationRepo, notifyService)
+	reservationHandler := reservation.NewHandler(reservationService, dbReadyFunc)
+
+	// Expense Domain
+	expenseRepo := expense.NewRepository(config.DB)
+	expenseService := expense.NewService(expenseRepo)
+	expenseHandler := expense.NewHandler(expenseService, dbReadyFunc)
+
+	// Report Domain
+	reportRepo := report.NewRepository(config.DB)
+	reportService := report.NewService(reportRepo)
+	reportHandler := report.NewHandler(reportService, dbReadyFunc)
+
 	// 3. Grup endpoint API
 	api := r.Group("/api")
 	{
 		// Autentikasi Publik
-		auth := api.Group("/auth")
+		authGroup := api.Group("/auth")
 		{
-			auth.POST("/register", controllers.Register)
-			auth.POST("/login", controllers.Login)
+			authGroup.POST("/register", authHandler.Register)
+			authGroup.POST("/login", authHandler.Login)
 
 			// Profil Pengguna (Terlindungi JWT)
-			auth.GET("/me", middlewares.AuthMiddleware(), controllers.GetCurrentUser)
+			authGroup.GET("/me", middleware.AuthMiddleware(), authHandler.GetCurrentUser)
 		}
 
 		// Rute Kamar (Terlindungi JWT)
-		rooms := api.Group("/rooms", middlewares.AuthMiddleware())
+		roomsGroup := api.Group("/rooms", middleware.AuthMiddleware())
 		{
-			rooms.GET("", controllers.GetRooms)
-			rooms.GET("/:id", controllers.GetRoomByID)
-			rooms.POST("", controllers.CreateRoom)
-			rooms.PUT("/:id", controllers.UpdateRoom)
-			rooms.DELETE("/:id", controllers.DeleteRoom)
+			roomsGroup.GET("", roomHandler.GetRooms)
+			roomsGroup.GET("/:id", roomHandler.GetRoomByID)
+			roomsGroup.POST("", roomHandler.CreateRoom)
+			roomsGroup.PUT("/:id", roomHandler.UpdateRoom)
+			roomsGroup.DELETE("/:id", roomHandler.DeleteRoom)
 		}
 
 		// Rute Reservasi & Check-in / Check-out (Terlindungi JWT)
-		reservations := api.Group("/reservations", middlewares.AuthMiddleware())
+		reservationsGroup := api.Group("/reservations", middleware.AuthMiddleware())
 		{
-			reservations.GET("", controllers.GetReservations)
-			reservations.GET("/:id", controllers.GetReservationByID)
-			reservations.POST("", controllers.CreateReservation)
-			reservations.PUT("/:id/checkout", controllers.CheckoutReservation)
-			reservations.PUT("/:id/cancel", controllers.CancelReservation)
+			reservationsGroup.GET("", reservationHandler.GetReservations)
+			reservationsGroup.GET("/payment-methods", reservationHandler.GetPaymentMethods)
+			reservationsGroup.GET("/:id", reservationHandler.GetReservationByID)
+			reservationsGroup.POST("", reservationHandler.CreateReservation)
+			reservationsGroup.PUT("/:id/checkout", reservationHandler.CheckoutReservation)
+			reservationsGroup.PUT("/:id/cancel", reservationHandler.CancelReservation)
+			reservationsGroup.POST("/:id/remind", reservationHandler.SendReminder)
 		}
 
 		// Rute Biaya Operasional USALI (Terlindungi JWT)
-		expenses := api.Group("/expenses", middlewares.AuthMiddleware())
+		expensesGroup := api.Group("/expenses", middleware.AuthMiddleware())
 		{
-			expenses.GET("/categories", controllers.GetExpenseCategories)
-			expenses.GET("", controllers.GetExpenses)
-			expenses.GET("/:id", controllers.GetExpenseByID)
-			expenses.POST("", controllers.CreateExpense)
-			expenses.PUT("/:id", controllers.UpdateExpense)
-			expenses.DELETE("/:id", controllers.DeleteExpense)
+			expensesGroup.GET("/categories", expenseHandler.GetExpenseCategories)
+			expensesGroup.GET("", expenseHandler.GetExpenses)
+			expensesGroup.GET("/:id", expenseHandler.GetExpenseByID)
+			expensesGroup.POST("", expenseHandler.CreateExpense)
+			expensesGroup.PUT("/:id", expenseHandler.UpdateExpense)
+			expensesGroup.DELETE("/:id", expenseHandler.DeleteExpense)
 		}
 
 		// Rute Dashboard KPI & Rekap Laporan Keuangan (Terlindungi JWT)
-		reports := api.Group("/reports", middlewares.AuthMiddleware())
+		reportsGroup := api.Group("/reports", middleware.AuthMiddleware())
 		{
-			reports.GET("/dashboard", controllers.GetDashboardMetrics)
+			reportsGroup.GET("/dashboard", reportHandler.GetDashboardMetrics)
 		}
 	}
 

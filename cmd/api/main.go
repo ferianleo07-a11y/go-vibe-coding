@@ -1,11 +1,17 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
+	"time"
 
 	"hotel-app/config"
-	"hotel-app/models"
+	"hotel-app/internal/auth"
+	"hotel-app/internal/expense"
+	"hotel-app/internal/notification"
+	"hotel-app/internal/reservation"
+	"hotel-app/internal/room"
 	"hotel-app/routes"
 
 	"github.com/joho/godotenv"
@@ -23,7 +29,12 @@ func main() {
 		log.Printf("Peringatan Database: %v\n", err)
 	} else {
 		// Jalankan AutoMigrate skema tabel
-		if err := config.AutoMigrate(&models.User{}, &models.Room{}, &models.Reservation{}, &models.Expense{}); err != nil {
+		if err := config.AutoMigrate(
+			&auth.User{},
+			&room.Room{},
+			&reservation.Reservation{},
+			&expense.Expense{},
+		); err != nil {
 			log.Printf("Peringatan Migrasi: %v\n", err)
 		} else {
 			log.Println("Migrasi tabel users, rooms, reservations, dan expenses berhasil.")
@@ -33,13 +44,25 @@ func main() {
 	// Setup seluruh rute aplikasi
 	r := routes.SetupRouter()
 
-	// Membaca port dari environment variable (mendukung APP_PORT atau PORT standar hosting)
+	// Jalankan background worker reminder checkout 15 menit (cek berkala setiap 1 menit)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	notifyService := notification.NewService()
+	reservationRepo := reservation.NewRepository(config.DB)
+	reservationService := reservation.NewService(reservationRepo, notifyService)
+	reservation.StartReminderWorker(ctx, reservationService, 1*time.Minute)
+
+	// Membaca port dari environment variable (default 8080)
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080" // Fallback default jika keduanya kosong
+		port = os.Getenv("APP_PORT")
+	}
+	if port == "" {
+		port = "8080"
 	}
 
-	log.Printf("Aplikasi Akuntansi Hotel berjalan di port :%s\n", port)
+	log.Printf("Aplikasi Akuntansi Hotel berjalan di http://localhost:%s\n", port)
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Gagal menjalankan server: %v", err)
 	}

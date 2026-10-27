@@ -1,7 +1,9 @@
-package models
+package room
 
 import (
 	"time"
+
+	"hotel-app/internal/auth"
 )
 
 // Daftar konstanta status kamar
@@ -25,10 +27,15 @@ type Room struct {
 	UpdatedAt     time.Time `json:"updated_at"`
 
 	// Relasi ke User
-	User User `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"-"`
+	User auth.User `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"-"`
 }
 
-// IsValidStatus memvalidasi apakah status yang dimasukkan sesuai dengan standar sistem.
+// TableName menentukan nama tabel database untuk Room.
+func (Room) TableName() string {
+	return "rooms"
+}
+
+// IsValidRoomStatus memvalidasi apakah status yang dimasukkan sesuai dengan standar sistem.
 func IsValidRoomStatus(status string) bool {
 	switch status {
 	case RoomStatusAvailable, RoomStatusOccupied, RoomStatusCleaning, RoomStatusMaintenance:
@@ -36,4 +43,13 @@ func IsValidRoomStatus(status string) bool {
 	default:
 		return false
 	}
+}
+
+// RoomInput mendefinisikan validasi payload untuk pembuatan dan pembaruan kamar.
+type RoomInput struct {
+	RoomNumber    string  `json:"room_number" binding:"required"`
+	Type          string  `json:"type" binding:"required"`
+	PricePerNight float64 `json:"price_per_night" binding:"required,gt=0"`
+	Status        string  `json:"status"`
+	Description   string  `json:"description"`
 }
